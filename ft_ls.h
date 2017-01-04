@@ -1,13 +1,30 @@
-#ifndef FT_PRINTF_H
-# define FT_PRINTF_H
+#ifndef FT_LS_H
+# define FT_LS_H
 
-# include <unistd.h>
-# include <stdlib.h>
-# include <stdarg.h>
+# include <dirent.h>
 # include <stdio.h>
-# include "./libft/libft.h"
+# include <sys/types.h>
+# include <sys/stat.h>
+# include <time.h>
+# include <stdlib.h>
+# include "./ft_printf/ft_printf.h"
 
-typedef	struct	s_flags
+typedef	struct	h_dir
 {
-	
-}				t_flags;
+	//
+	int msize;
+	int curdir;
+	//
+	char **list;
+	int *isdir;
+	long *size;
+	char **atim;
+	char **mtim;
+	char **ctim;
+	char **permd;
+	char **group;
+	//imp
+	int *visible;
+}				h_dir;
+
+#endif
