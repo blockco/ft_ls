@@ -98,7 +98,7 @@ void initstruct(h_dir **current, char *str)
 	{
 	   if (-1 == stat(makepath(str, dp->d_name), &sb))
 	   {
-		   perror("fuckkkk");
+		   perror("name overload");
 		   exit(EXIT_FAILURE);
 	   }
 	   key = (sb.st_mode & S_IFMT);
