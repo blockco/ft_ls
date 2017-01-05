@@ -118,70 +118,44 @@ char	**dup_strarray(h_dir **current, char **list)
 	return (ret);
 }
 
-void lex_sort(h_dir **current, char **list)
+int	name_sort(h_dir **current, int pos1, int pos2)
+{
+	h_dir *curr;
+
+	curr = *current;
+	return (ft_strcmp(curr->list[pos1], curr->list[pos2]) > 0);
+}
+
+void lex_sort(h_dir **current, int (*sort_func)(h_dir **, int, int))
 {
 	int		iterator;
 	h_dir	*curr;
-	char	*min;
+	int		min;
 	int		pos_in_list;
-	char	**cpy;
+	int		*found;
 
 	curr = *current;
 	iterator = 0;
-	cpy = dup_strarray(current, list);
+	found = ft_memalloc(sizeof(int) * curr->msize);
 	while (iterator < curr->msize)
 	{
-		min = 0;
+		min = -1;
 		pos_in_list = 0;
 		while (pos_in_list < curr->msize)
 		{
-			if (cpy[pos_in_list][0] && (min == 0 || ft_strcmp(min, cpy[pos_in_list]) > 0))
+			if (!found[pos_in_list] && (min == -1 || sort_func(current, min, pos_in_list)))
 			{
 				curr->print[iterator] = pos_in_list;
-				min = cpy[pos_in_list];
+				min = pos_in_list;
 			}
 			pos_in_list++;
 		}
-		min[0] = 0;
+		found[min] = 1;
 		iterator++;
 	}
+	free(found);
 }
 
-// void lex_sort(h_dir **current, char **list)
-// {
-// 	int temp;
-// 	int i;
-// 	int z;
-// 	h_dir *curr;
-//
-// 	i = 0;
-// 	z = 0;
-// 	curr = *current;
-// 	while (z < curr->msize)
-// 	{
-// 		temp = 0;
-// 		while (!list[i][0])
-// 		{
-// 			i++;
-// 		}
-// 		while (i < curr->msize)
-// 		{
-// 			while (!list[i])
-// 				i++;
-// 			if (ft_strcmp(list[temp], list[i]) < 0)
-// 			{
-// 				temp = i;
-// 			}
-// 			i++;
-// 		}
-// 		ft_putnbr(temp);
-// 		ft_putendl("a");
-// 		curr->print[z] = temp;
-// 		list[temp] = ft_strdup("");
-// 		i = 0;
-// 		z++;
-// 	}
-// }
 void upper_r(char *str)
 {
 	h_dir *curr;
@@ -191,7 +165,7 @@ void upper_r(char *str)
 	curr = malloc(sizeof(h_dir));
 	curr->msize = findmsize(str);
 	initstruct(&curr, str);
-	lex_sort(&curr, curr->list);
+	lex_sort(&curr, name_sort);
 	i = 0;
 	while(i < curr->msize)
 	{

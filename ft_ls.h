@@ -28,5 +28,5 @@ typedef	struct	h_dir
 	int *print;
 }				h_dir;
 
-void lex_sort(h_dir **current, char **list);
+void lex_sort(h_dir **curr, int (*sort_func)(h_dir **, int, int));
 #endif
