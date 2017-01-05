@@ -26,6 +26,7 @@ typedef	struct	h_dir
 	//imp
 	int *visible;
 	int *print;
+	size_t longest;
 }				h_dir;
 
 void lex_sort(h_dir **curr, int (*sort_func)(h_dir **, int, int));

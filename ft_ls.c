@@ -31,12 +31,46 @@ void mallocstruct(h_dir **current)
 	curr->group = (char**)malloc(sizeof(char*) * curr->msize);
 	curr->visible = (int*)malloc(sizeof(int) * curr->msize);
 	curr->print = (int*)malloc(sizeof(int) * curr->msize);
+	curr->longest = 0;
 }
 
-char* permstr(char *perm)
+char* intit_perm(int isdir)
 {
-	perm = NULL;
-	return("hello");
+	if (isdir)
+		return(ft_strdup("d"));
+	return(ft_strdup("-"));
+}
+
+char* permstr(char *perm, int isdir)
+{
+	int i;
+	char *ret;
+	if (isdir)
+		i = 2;
+	else
+		i = 3;
+	ret = intit_perm(isdir);
+	while (perm[i])
+	{
+		if(perm[i] == '7')
+			ret = betterjoin(ret, "rwx");
+		else if (perm[i] == '6')
+			ret = betterjoin(ret, "rw-");
+		else if (perm[i] == '5')
+			ret = betterjoin(ret, "r-x");
+		else if (perm[i] == '4')
+			ret = betterjoin(ret, "r--");
+		else if (perm[i] == '3')
+			ret = betterjoin(ret, "-wx");
+		else if (perm[i] == '2')
+			ret = betterjoin(ret, "-w-");
+		else if (perm[i] == '1')
+			ret = betterjoin(ret, "--x");
+		else
+			ret = betterjoin(ret, "---");
+		i++;
+	}
+	return (ret);
 }
 
 char* makepath(char *curdir, char *file)
@@ -81,7 +115,9 @@ void initstruct(h_dir **current, char *str)
 		curr->atim[i] = ft_strdup(ctime(&sb.st_atime));
 		curr->mtim[i] = ft_strdup(ctime(&sb.st_mtime));
 		curr->ctim[i] = ft_strdup(ctime(&sb.st_ctime));
-		curr->permd[i] = ft_strdup(permstr(ft_itoa_base(sb.st_mode, 8)));
+		curr->permd[i] = ft_strdup(permstr(ft_itoa_base(sb.st_mode, 8), curr->isdir[i]));
+		if (ft_strlen(dp->d_name) > curr->longest)
+			curr->longest = ft_strlen(dp->d_name);
 		i++;
 	}
 }
@@ -135,23 +171,20 @@ void lex_sort(h_dir **current, int (*sort_func)(h_dir **, int, int))
 	int		*found;
 
 	curr = *current;
-	iterator = 0;
+	iterator = -1;
 	found = ft_memalloc(sizeof(int) * curr->msize);
-	while (iterator < curr->msize)
+	while (++iterator < curr->msize)
 	{
 		min = -1;
-		pos_in_list = 0;
-		while (pos_in_list < curr->msize)
-		{
-			if (!found[pos_in_list] && (min == -1 || sort_func(current, min, pos_in_list)))
+		pos_in_list = -1;
+		while (++pos_in_list < curr->msize)
+			if (!found[pos_in_list] && (min == -1
+				|| sort_func(current, min, pos_in_list)))
 			{
 				curr->print[iterator] = pos_in_list;
 				min = pos_in_list;
 			}
-			pos_in_list++;
-		}
 		found[min] = 1;
-		iterator++;
 	}
 	free(found);
 }
@@ -160,16 +193,18 @@ void upper_r(char *str)
 {
 	h_dir *curr;
 	int i;
-	//int *print;
+	char *key;
 
 	curr = malloc(sizeof(h_dir));
 	curr->msize = findmsize(str);
 	initstruct(&curr, str);
 	lex_sort(&curr, name_sort);
+	key = betterjoin("%-12s%-", (ft_itoa_base((curr->longest + 2), 10)));
+	key = betterjoin(key, "s%s");
 	i = 0;
 	while(i < curr->msize)
 	{
-		ft_printf("%s\n", curr->list[curr->print[i]]);
+		ft_printf(key, curr->permd[curr->print[i]] ,curr->list[curr->print[i]], curr->ctim[curr->print[i]]);
 		i++;
 	}
 	i = 0;
