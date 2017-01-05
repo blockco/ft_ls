@@ -27,4 +27,5 @@ typedef	struct	h_dir
 	int *visible;
 }				h_dir;
 
+int *lex_sort(h_dir *curr);
 #endif
