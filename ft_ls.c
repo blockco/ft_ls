@@ -30,6 +30,7 @@ void mallocstruct(h_dir **current)
 	curr->permd = (char**)malloc(sizeof(char*) * curr->msize);
 	curr->group = (char**)malloc(sizeof(char*) * curr->msize);
 	curr->visible = (int*)malloc(sizeof(int) * curr->msize);
+	curr->print = (int*)malloc(sizeof(int) * curr->msize);
 }
 
 char* permstr(char *perm)
@@ -92,35 +93,6 @@ int checkinf(char *str)
 	return(1);
 }
 
-void upper_r(char *str)
-{
-	h_dir *curr;
-	int i;
-	//int *print;
-
-	curr = malloc(sizeof(h_dir));
-	curr->msize = findmsize(str);
-	initstruct(&curr, str);
-	//print = lex_sort(curr);
-	i = 0;
-	while(curr->list[i])
-	{
-		ft_printf("%s\n", curr->list[i]);
-		i++;
-	}
-	i = 0;
-	while(curr->list[i])
-	{
-		if(curr->list[i] && curr->visible[i] && curr->isdir[i]
-			&& checkinf(curr->list[i]))
-		{
-			ft_printf("\n%s:\n", makepath(str, curr->list[i]));
-			upper_r(makepath(str, curr->list[i]));
-		}
-	i++;
-	}
-}
-
 //sorting
 void add_sorted(h_dir **current, h_dir **newer, int n, int o)
 {
@@ -134,39 +106,109 @@ void add_sorted(h_dir **current, h_dir **newer, int n, int o)
 	curr->list[n] = NULL;
 }
 
-int *lex_sort(h_dir *curr)
+char	**dup_strarray(h_dir **current, char **list)
 {
-	int temp;
-	int *print;
-	int i;
-	int z;
+	char	**ret;
+	int		x;
 
-	print = (int*)malloc(sizeof(int) * curr->msize);
-	i = 0;
-	z = 0;
-	while (z < curr->msize)
+	ret = ft_memalloc(sizeof(char *) * (*current)->msize);
+	x = -1;
+	while (++x < (*current)->msize)
+		ret[x] = ft_strdup(list[x]);
+	return (ret);
+}
+
+void lex_sort(h_dir **current, char **list)
+{
+	int		iterator;
+	h_dir	*curr;
+	char	*min;
+	int		pos_in_list;
+	char	**cpy;
+
+	curr = *current;
+	iterator = 0;
+	cpy = dup_strarray(current, list);
+	while (iterator < curr->msize)
 	{
-		while (!curr->list[i])
-			i++;
-		while (i < curr->msize)
+		min = 0;
+		pos_in_list = 0;
+		while (pos_in_list < curr->msize)
 		{
-			while (!curr->list[i])
-				i++;
-			temp = i;
-			i++;
-			if (ft_strcmp(curr->list[temp], curr->list[i]) > 0)
+			if (cpy[pos_in_list][0] && (min == 0 || ft_strcmp(min, cpy[pos_in_list]) > 0))
 			{
-				temp = i;
-				i = 0;
+				curr->print[iterator] = pos_in_list;
+				min = cpy[pos_in_list];
 			}
-			else
-				i++;
+			pos_in_list++;
 		}
-		print[z] = temp;
-		i = 0;
-		z++;
+		min[0] = 0;
+		iterator++;
 	}
-	return (print);
+}
+
+// void lex_sort(h_dir **current, char **list)
+// {
+// 	int temp;
+// 	int i;
+// 	int z;
+// 	h_dir *curr;
+//
+// 	i = 0;
+// 	z = 0;
+// 	curr = *current;
+// 	while (z < curr->msize)
+// 	{
+// 		temp = 0;
+// 		while (!list[i][0])
+// 		{
+// 			i++;
+// 		}
+// 		while (i < curr->msize)
+// 		{
+// 			while (!list[i])
+// 				i++;
+// 			if (ft_strcmp(list[temp], list[i]) < 0)
+// 			{
+// 				temp = i;
+// 			}
+// 			i++;
+// 		}
+// 		ft_putnbr(temp);
+// 		ft_putendl("a");
+// 		curr->print[z] = temp;
+// 		list[temp] = ft_strdup("");
+// 		i = 0;
+// 		z++;
+// 	}
+// }
+void upper_r(char *str)
+{
+	h_dir *curr;
+	int i;
+	//int *print;
+
+	curr = malloc(sizeof(h_dir));
+	curr->msize = findmsize(str);
+	initstruct(&curr, str);
+	lex_sort(&curr, curr->list);
+	i = 0;
+	while(i < curr->msize)
+	{
+		ft_printf("%s\n", curr->list[curr->print[i]]);
+		i++;
+	}
+	i = 0;
+	while(i < curr->msize)
+	{
+		if(curr->list[curr->print[i]] && curr->visible[curr->print[i]] && curr->isdir[curr->print[i]]
+			&& checkinf(curr->list[curr->print[i]]))
+		{
+			ft_printf("\n%s:\n", makepath(str, curr->list[curr->print[i]]));
+			upper_r(makepath(str, curr->list[curr->print[i]]));
+		}
+	i++;
+	}
 }
 
 int main()
