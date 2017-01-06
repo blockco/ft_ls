@@ -8,7 +8,10 @@ int findmsize(char *str)
 	struct dirent *dp;
 
 	msize = 0;
+	errno = 0;
 	dir = opendir (str);
+	if (errno == EACCES)
+		return(0);
 	while ((dp = readdir (dir)) != NULL)
 		msize++;
 	closedir(dir);
@@ -24,14 +27,30 @@ void mallocstruct(h_dir **current)
 	curr->list[curr->msize] = NULL;
 	curr->isdir = (int*)malloc(sizeof(int) * curr->msize);
 	curr->size = (long*)malloc(sizeof(long) * curr->msize);
+
 	curr->atim = (char**)malloc(sizeof(char*) * curr->msize);
+	curr->atim_s = (long long*)malloc(sizeof(long long) * curr->msize);
+	curr->atim_n = (long*)malloc(sizeof(long) * curr->msize);
+
 	curr->mtim = (char**)malloc(sizeof(char*) * curr->msize);
+	curr->mtim_s = (long long*)malloc(sizeof(long long) * curr->msize);
+	curr->mtim_n = (long*)malloc(sizeof(long) * curr->msize);
+
 	curr->ctim = (char**)malloc(sizeof(char*) * curr->msize);
+	curr->ctim_s = (long long*)malloc(sizeof(long long) * curr->msize);
+	curr->ctim_n = (long*)malloc(sizeof(long) * curr->msize);
+
 	curr->permd = (char**)malloc(sizeof(char*) * curr->msize);
 	curr->group = (char**)malloc(sizeof(char*) * curr->msize);
 	curr->visible = (int*)malloc(sizeof(int) * curr->msize);
 	curr->print = (int*)malloc(sizeof(int) * curr->msize);
+	curr->owner = (char**)malloc(sizeof(char*) * curr->msize);
+
+	curr->blocks = 0;
 	curr->longest = 0;
+	curr->groupsize = 0;
+	curr->sizeprint = 0;
+	curr->ownersize = 0;
 }
 
 char* intit_perm(int isdir)
@@ -87,20 +106,46 @@ void initstruct(h_dir **current, char *str)
 	int i;
 	struct dirent *dp;
 	struct stat sb;
+	struct stat sb_l;
+	struct passwd *pwuser;
+	struct group *grpnam;
 	h_dir *curr;
 	int key;
+	int block_t;
 
+	block_t = 0;
 	i = 0;
 	curr = *current;
 	mallocstruct(&curr);
+	errno = 0;
 	dir = opendir(str);
+	if (errno == EACCES)
+	{
+		return;
+	}
 	while ((dp = readdir (dir)) != NULL)
 	{
 	   if (-1 == stat(makepath(str, dp->d_name), &sb))
 	   {
+		   ft_printf("%s\n", str);
 		   perror("name overload");
 		   exit(EXIT_FAILURE);
 	   }
+	   if (-1 == lstat(makepath(str, dp->d_name), &sb_l))
+	   {
+		   perror("name overload");
+		   exit(EXIT_FAILURE);
+	   }
+	   if (NULL == (pwuser = getpwuid(sb.st_uid)))
+		{
+		   perror("getpwuid()");
+		   exit(EXIT_FAILURE);
+		}
+		if (NULL == (grpnam = getgrgid(sb.st_gid)))
+		{
+		   perror("getgrgid()");
+		   exit(EXIT_FAILURE);
+		}
 	   key = (sb.st_mode & S_IFMT);
 	   if (key == S_IFDIR)
 	   		curr->isdir[i] = 1;
@@ -111,15 +156,36 @@ void initstruct(h_dir **current, char *str)
 	   else
 		   curr->visible[i] = 1;
 		curr->list[i] = ft_strdup(dp->d_name);
+		curr->owner[i] = ft_strdup(pwuser->pw_name);
+		curr->group[i] = ft_strdup(grpnam->gr_name);
+
 		curr->size[i] = sb.st_size;
+
 		curr->atim[i] = ft_strdup(ctime(&sb.st_atime));
+		curr->atim_s[i] = (long long)sb_l.st_atimespec.tv_sec;
+		curr->atim_n[i] = (long)sb_l.st_atimespec.tv_nsec;
+
 		curr->mtim[i] = ft_strdup(ctime(&sb.st_mtime));
+		curr->mtim_s[i] = (long long)sb_l.st_mtimespec.tv_sec;
+		curr->mtim_n[i] = (long)sb_l.st_mtimespec.tv_nsec;
+
 		curr->ctim[i] = ft_strdup(ctime(&sb.st_ctime));
+		curr->ctim_s[i] = (long long)sb_l.st_ctimespec.tv_sec;
+		curr->ctim_n[i] = (long)sb_l.st_ctimespec.tv_nsec;
+
 		curr->permd[i] = ft_strdup(permstr(ft_itoa_base(sb.st_mode, 8), curr->isdir[i]));
 		if (ft_strlen(dp->d_name) > curr->longest)
 			curr->longest = ft_strlen(dp->d_name);
+		if (ft_strlen(curr->group[i]) > curr->groupsize)
+			curr->groupsize = ft_strlen(curr->group[i]);
+		if (ft_strlen(curr->owner[i]) > curr->ownersize)
+			curr->ownersize = ft_strlen(curr->owner[i]);
+		if (ft_strlen(ft_itoa_base(curr->size[i], 10)) > curr->sizeprint)
+			curr->sizeprint = ft_strlen(ft_itoa_base(curr->size[i], 10));
+		block_t += sb.st_blocks;
 		i++;
 	}
+	curr->blocks = block_t;
 }
 
 int checkinf(char *str)
@@ -193,18 +259,34 @@ void upper_r(char *str)
 {
 	h_dir *curr;
 	int i;
+	char* temp;
 	char *key;
 
 	curr = malloc(sizeof(h_dir));
 	curr->msize = findmsize(str);
 	initstruct(&curr, str);
 	lex_sort(&curr, name_sort);
-	key = betterjoin("%-12s%-", (ft_itoa_base((curr->longest + 2), 10)));
-	key = betterjoin(key, "s%s");
+	key = betterjoin("%-12s%-", (ft_itoa_base((curr->ownersize + 2), 10)));
+	key = betterjoin(key, "s%-");
+	key = betterjoin(key, ft_itoa_base((curr->groupsize + 2), 10));
+	key = betterjoin(key,"s%-");
+	key = betterjoin(key, ft_itoa_base((curr->sizeprint + 2), 10));
+	key = betterjoin(key, "s%-");
+	key = betterjoin(key, ft_itoa_base((curr->longest + 2), 10));
+	key = betterjoin(key, "s%-2s");
+
 	i = 0;
 	while(i < curr->msize)
 	{
-		ft_printf(key, curr->permd[curr->print[i]] ,curr->list[curr->print[i]], curr->ctim[curr->print[i]]);
+		if (i == 0)
+		{
+			temp = makepath(str, curr->list[curr->print[i]]);
+			temp[ft_strlen(temp) - 1] = '\0';
+			ft_printf("\n%s:\n", temp);
+			ft_printf("%lld\n", curr->blocks);
+		}
+		ft_printf(key, curr->permd[curr->print[i]] ,curr->owner[curr->print[i]], curr->group[curr->print[i]],
+		ft_itoa_base(curr->size[curr->print[i]], 10), curr->list[curr->print[i]], curr->atim[curr->print[i]]);
 		i++;
 	}
 	i = 0;
@@ -213,7 +295,6 @@ void upper_r(char *str)
 		if(curr->list[curr->print[i]] && curr->visible[curr->print[i]] && curr->isdir[curr->print[i]]
 			&& checkinf(curr->list[curr->print[i]]))
 		{
-			ft_printf("\n%s:\n", makepath(str, curr->list[curr->print[i]]));
 			upper_r(makepath(str, curr->list[curr->print[i]]));
 		}
 	i++;
