@@ -15,7 +15,7 @@ $(CC):
 		@$(CC) $(FLAG) $(SRCS) -o ft_ls
 
 clean:
-		@/bin/rm -f $(OBJS)
+		@/bin/rm -f $(OBJS) ft_ls
 
 fclean:	clean
 		@/bin/rm -f ft_ls
