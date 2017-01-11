@@ -20,6 +20,7 @@ typedef	struct	h_dir
 	size_t groupsize;
 	size_t ownersize;
 	size_t sizeprint;
+	size_t longest;
 	//
 	char **owner;
 	char **list;
@@ -45,7 +46,7 @@ typedef	struct	h_dir
 	int *print;
 	int time_v;
 	long long blocks;
-	size_t longest;
+	int *islnk;
 }				h_dir;
 
 void lex_sort(h_dir **curr, int (*sort_func)(h_dir **, int, int));
