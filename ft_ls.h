@@ -26,6 +26,7 @@ typedef	struct	h_dir
 	char **list;
 	int *isdir;
 	long *size;
+	long *time_v;
 
 	char **atim;
 	long long *atim_s;
@@ -44,7 +45,6 @@ typedef	struct	h_dir
 	//imp
 	int *visible;
 	int *print;
-	int time_v;
 	long long blocks;
 	int *islnk;
 }				h_dir;

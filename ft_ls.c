@@ -39,6 +39,7 @@ void mallocstruct(h_dir **current)
 	curr->ctim = (char**)malloc(sizeof(char*) * curr->msize);
 	curr->ctim_s = (long long*)malloc(sizeof(long long) * curr->msize);
 	curr->ctim_n = (long*)malloc(sizeof(long) * curr->msize);
+	curr->time_v = (long*)malloc(sizeof(long) * curr->msize);
 
 	curr->permd = (char**)malloc(sizeof(char*) * curr->msize);
 	curr->group = (char**)malloc(sizeof(char*) * curr->msize);
@@ -141,6 +142,7 @@ int getlnk(struct stat sb_l, h_dir **current, int i)
 	curr->mtim_s[i] = (long long)sb_l.st_mtimespec.tv_sec;
 	curr->mtim_n[i] = (long)sb_l.st_mtimespec.tv_nsec;
 	curr->ctim[i] = ft_strdup(ctime(&sb_l.st_ctime));
+	curr->time_v[i] = sb_l.st_mtime;
 	curr->ctim_s[i] = (long long)sb_l.st_ctimespec.tv_sec;
 	curr->ctim_n[i] = (long)sb_l.st_ctimespec.tv_nsec;
 	curr->permd[i] = ft_strdup(permstr(ft_itoa_base(sb_l.st_mode, 8), curr->isdir[i]));
@@ -186,17 +188,17 @@ int checkinf(char *str)
 }
 
 //sorting
-void add_sorted(h_dir **current, h_dir **newer, int n, int o)
-{
-	h_dir *new;
-	h_dir *curr;
-
-	curr = *current;
-	new = *newer;
-	new->list[n] = ft_strdup(curr->list[o]);
-	free(curr->list[n]);
-	curr->list[n] = NULL;
-}
+// void add_sorted(h_dir **current, h_dir **newer, int n, int o)
+// {
+// 	h_dir *new;
+// 	h_dir *curr;
+//
+// 	curr = *current;
+// 	new = *newer;
+// 	new->list[n] = ft_strdup(curr->list[o]);
+// 	free(curr->list[n]);
+// 	curr->list[n] = NULL;
+// }
 
 char	**dup_strarray(h_dir **current, char **list)
 {
@@ -245,6 +247,16 @@ void lex_sort(h_dir **current, int (*sort_func)(h_dir **, int, int))
 	free(found);
 }
 
+int time_sort(h_dir **current, int pos1, int pos2)
+{
+	h_dir *curr;
+
+	curr = *current;
+	if (curr->time_v[pos1] - curr->time_v[pos2] == 0)
+		return (curr->mtim_n[pos1] - curr->mtim_n[pos2] < 0);
+	return (curr->time_v[pos1] - curr->time_v[pos2] < 0);
+}
+
 void findmax(h_dir **current)
 {
 	int i;
@@ -266,6 +278,25 @@ void findmax(h_dir **current)
 	}
 }
 
+void trimtime(char *time_s)
+{
+	time_s[ft_strlen(time_s) - 1] = 0;
+}
+
+char *printlnk(char *str)
+{
+	struct stat sb;
+	char *linkname;
+
+	if (lstat(str, &sb) == -1)
+	{
+		perror("lstat");
+		exit(EXIT_FAILURE);
+	}
+	linkname = ft_strnew(sb.st_size);
+	readlink(str, linkname, sb.st_size + 1);
+	return(linkname);
+}
 void upper_r(char *str)
 {
 	h_dir *curr;
@@ -277,7 +308,7 @@ void upper_r(char *str)
 	curr->msize = findmsize(str);
 	initstruct(&curr, str);
 	findmax(&curr);
-	lex_sort(&curr, name_sort);
+	lex_sort(&curr, time_sort);
 	key = betterjoin("%-12s%-", (ft_itoa_base((curr->ownersize + 2), 10)));
 	key = betterjoin(key, "s%-");
 	key = betterjoin(key, ft_itoa_base((curr->groupsize + 2), 10));
@@ -297,8 +328,13 @@ void upper_r(char *str)
 			ft_printf("\n%s:\n", temp);
 			ft_printf("%lld\n", curr->blocks);
 		}
+		trimtime(curr->atim[curr->print[i]]);
 		ft_printf(key, curr->permd[curr->print[i]] ,curr->owner[curr->print[i]], curr->group[curr->print[i]],
-		ft_itoa_base(curr->size[curr->print[i]], 10), curr->list[curr->print[i]], curr->atim[curr->print[i]]);
+		ft_itoa_base(curr->size[curr->print[i]], 10), curr->list[curr->print[i]], curr->mtim[curr->print[i]]);
+		if (curr->islnk[curr->print[i]])
+			ft_printf("%s%s\n", " -> ", printlnk(makepath(str, curr->list[curr->print[i]])));
+		else
+			//ft_putchar('\n');
 		i++;
 	}
 	i = 0;
@@ -308,7 +344,7 @@ void upper_r(char *str)
 		if(curr->list[curr->print[i]] && curr->visible[curr->print[i]] && curr->isdir[curr->print[i]]
 			&& checkinf(curr->list[curr->print[i]]) && !curr->islnk[curr->print[i]])
 		{
-			upper_r(makepath(str, curr->list[curr->print[i]]));
+			//upper_r(makepath(str, curr->list[curr->print[i]]));
 		}
 	i++;
 	}
