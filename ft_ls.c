@@ -316,7 +316,7 @@ char* makekey(h_dir **current)
 	return key;
 }
 
-void upper_rl(char *str)
+void upper_rl(char *str, int first)
 {
 	h_dir *curr;
 	int i;
@@ -337,8 +337,9 @@ void upper_rl(char *str)
 		{
 			temp = makepath(str, curr->list[curr->print[i]]);
 			temp[ft_strlen(temp) - 1] = '\0';
+		if (first++)
 			ft_printf("\n%s:\n", temp);
-			ft_printf("%lld\n", curr->blocks);
+		ft_printf("%s%lld\n", "total ",curr->blocks);
 		}
 		trimtime(curr->mtim[curr->print[i]]);
 		ft_printf(key, curr->permd[curr->print[i]], curr->l_count[curr->print[i]] ,curr->owner[curr->print[i]], curr->group[curr->print[i]],
@@ -356,7 +357,7 @@ void upper_rl(char *str)
 		if(curr->list[curr->print[i]] && curr->visible[curr->print[i]] && curr->isdir[curr->print[i]]
 			&& checkinf(curr->list[curr->print[i]]) && !curr->islnk[curr->print[i]])
 		{
-			//upper_rl(makepath(str, curr->list[curr->print[i]]));
+			upper_rl(makepath(str, curr->list[curr->print[i]]), first);
 		}
 	i++;
 	}
@@ -416,6 +417,6 @@ int main(int argc, char const *argv[])
 	flags = malloc(sizeof(t_opt));
 	initflag(flags);
 	str = parseinput(argv, flags, argc);
-    upper_rl(str);
+    upper_rl(str, 0);
 	printflags(flags);
 }

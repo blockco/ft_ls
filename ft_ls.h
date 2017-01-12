@@ -106,7 +106,7 @@ void trimtime(char *time_s);
 char *printlnk(char *str);
 
 //Recursive LS call
-void upper_rl(char *str);
+void upper_rl(char *str, int first);
 
 //makes path to make Recursive call or print directory
 char* makepath(char *curdir, char *file);
