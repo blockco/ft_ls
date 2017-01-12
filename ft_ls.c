@@ -32,6 +32,8 @@ void mallocstruct(h_dir **current)
 	curr->atim_s = (long long*)malloc(sizeof(long long) * curr->msize);
 	curr->atim_n = (long*)malloc(sizeof(long) * curr->msize);
 
+	curr->l_count = (char**)malloc(sizeof(char*) * curr->msize);
+
 	curr->mtim = (char**)malloc(sizeof(char*) * curr->msize);
 	curr->mtim_s = (long long*)malloc(sizeof(long long) * curr->msize);
 	curr->mtim_n = (long*)malloc(sizeof(long) * curr->msize);
@@ -117,9 +119,9 @@ int getlnk(struct stat sb_l, h_dir **current, int i)
 	}
 	if (NULL == (grpnam = getgrgid(sb_l.st_gid)))
 	{
-	   perror("getgrgid()");
-	   exit(EXIT_FAILURE);
-   }
+		perror("getgrgid()");
+		exit(EXIT_FAILURE);
+	}
 	if ((sb_l.st_mode & S_IFMT) == S_IFDIR)
 		curr->isdir[i] = 1;
 	else
@@ -146,8 +148,9 @@ int getlnk(struct stat sb_l, h_dir **current, int i)
 	curr->ctim_s[i] = (long long)sb_l.st_ctimespec.tv_sec;
 	curr->ctim_n[i] = (long)sb_l.st_ctimespec.tv_nsec;
 	curr->permd[i] = ft_strdup(permstr(ft_itoa_base(sb_l.st_mode, 8), curr->isdir[i]));
+	curr->l_count[i] = ft_itoa_base(sb_l.st_nlink, 10);
 	return(sb_l.st_blocks);
-  }
+}
 
 void initstruct(h_dir **current, char *str)
 {
@@ -187,18 +190,6 @@ int checkinf(char *str)
 	return(1);
 }
 
-//sorting
-// void add_sorted(h_dir **current, h_dir **newer, int n, int o)
-// {
-// 	h_dir *new;
-// 	h_dir *curr;
-//
-// 	curr = *current;
-// 	new = *newer;
-// 	new->list[n] = ft_strdup(curr->list[o]);
-// 	free(curr->list[n]);
-// 	curr->list[n] = NULL;
-// }
 
 char	**dup_strarray(h_dir **current, char **list)
 {
@@ -266,6 +257,8 @@ void findmax(h_dir **current)
 	curr = *current;
 	while (curr->list[i])
 	{
+		if (ft_strlen(curr->l_count[i]) > curr->linksize)
+			curr->linksize = ft_strlen(curr->l_count[i]);
 		if (ft_strlen(curr->list[i]) > curr->longest)
 			curr->longest = ft_strlen(curr->list[i]);
 		if (ft_strlen(curr->owner[i]) > curr->ownersize)
@@ -278,9 +271,15 @@ void findmax(h_dir **current)
 	}
 }
 
+void timefix(char *time_s)
+{
+	time_s = ft_strsub(time_s, 5, (ft_strlen(time_s) - 5));
+}
+
 void trimtime(char *time_s)
 {
 	time_s[ft_strlen(time_s) - 1] = 0;
+	timefix(time_s);
 }
 
 char *printlnk(char *str)
@@ -297,7 +296,27 @@ char *printlnk(char *str)
 	readlink(str, linkname, sb.st_size + 1);
 	return(linkname);
 }
-void upper_r(char *str)
+
+char* makekey(h_dir **current)
+{
+	char	*key;
+	h_dir *curr;
+
+	curr = *current;
+	key = betterjoin("%-12s%-", (ft_itoa_base((curr->linksize + 1), 10)));
+	key = betterjoin(key, "s%-");
+	key = betterjoin(key, (ft_itoa_base((curr->ownersize + 2), 10)));
+	key = betterjoin(key, "s%-");
+	key = betterjoin(key, ft_itoa_base((curr->groupsize + 2), 10));
+	key = betterjoin(key,"s%-");
+	key = betterjoin(key, ft_itoa_base((curr->sizeprint + 2), 10));
+	key = betterjoin(key, "s%-");
+	key = betterjoin(key, ft_itoa_base((curr->longest + 2), 10));
+	key = betterjoin(key, "s%-2s");
+	return key;
+}
+
+void upper_rl(char *str)
 {
 	h_dir *curr;
 	int i;
@@ -309,14 +328,7 @@ void upper_r(char *str)
 	initstruct(&curr, str);
 	findmax(&curr);
 	lex_sort(&curr, time_sort);
-	key = betterjoin("%-12s%-", (ft_itoa_base((curr->ownersize + 2), 10)));
-	key = betterjoin(key, "s%-");
-	key = betterjoin(key, ft_itoa_base((curr->groupsize + 2), 10));
-	key = betterjoin(key,"s%-");
-	key = betterjoin(key, ft_itoa_base((curr->sizeprint + 2), 10));
-	key = betterjoin(key, "s%-");
-	key = betterjoin(key, ft_itoa_base((curr->longest + 2), 10));
-	key = betterjoin(key, "s%-2s");
+	key = makekey(&curr);
 
 	i = 0;
 	while(i < curr->msize)
@@ -328,13 +340,13 @@ void upper_r(char *str)
 			ft_printf("\n%s:\n", temp);
 			ft_printf("%lld\n", curr->blocks);
 		}
-		trimtime(curr->atim[curr->print[i]]);
-		ft_printf(key, curr->permd[curr->print[i]] ,curr->owner[curr->print[i]], curr->group[curr->print[i]],
+		trimtime(curr->mtim[curr->print[i]]);
+		ft_printf(key, curr->permd[curr->print[i]], curr->l_count[curr->print[i]] ,curr->owner[curr->print[i]], curr->group[curr->print[i]],
 		ft_itoa_base(curr->size[curr->print[i]], 10), curr->list[curr->print[i]], curr->mtim[curr->print[i]]);
 		if (curr->islnk[curr->print[i]])
 			ft_printf("%s%s\n", " -> ", printlnk(makepath(str, curr->list[curr->print[i]])));
 		else
-			//ft_putchar('\n');
+			ft_putchar('\n');
 		i++;
 	}
 	i = 0;
@@ -344,13 +356,66 @@ void upper_r(char *str)
 		if(curr->list[curr->print[i]] && curr->visible[curr->print[i]] && curr->isdir[curr->print[i]]
 			&& checkinf(curr->list[curr->print[i]]) && !curr->islnk[curr->print[i]])
 		{
-			//upper_r(makepath(str, curr->list[curr->print[i]]));
+			//upper_rl(makepath(str, curr->list[curr->print[i]]));
 		}
 	i++;
 	}
 }
 
-int main()
+void initflag(t_opt *flags)
 {
-    upper_r(".");
+	flags->l_op = 0;
+	flags->reg_ls = 0;
+	flags->rec_op = 0;
+	flags->a_op = 0;
+	flags->rev_op = 0;
+	flags->t_op = 0;
+}
+
+void checkflag(char c, t_opt *flags)
+{
+	if (c == 'l')
+		flags->l_op = 1;
+	else if (c == 'R')
+		flags->rec_op = 1;
+	else if (c == 'a')
+		flags->a_op = 1;
+	else if (c == 'r')
+		flags->rev_op = 1;
+	else if (c == 't')
+		flags->t_op = 1;
+}
+
+char *parseinput(const char **input, t_opt *flags, int argc)
+{
+	int i;
+	int c;
+
+	i = 2;
+	while (i < argc)
+	{
+		c = 0;
+		while(input[i][c])
+			checkflag(input[i][c++], flags);
+		i++;
+	}
+	if (input[1] == NULL)
+		return (ft_strdup("."));
+	return(ft_strdup(input[1]));
+}
+
+void printflags(t_opt *flags)
+{
+	ft_printf("%d\n%d\n%d\n%d\n%d\n%d\n", flags->l_op,flags->reg_ls,flags->rec_op,flags->a_op,flags->rev_op,flags->t_op);
+}
+
+int main(int argc, char const *argv[])
+{
+	t_opt *flags;
+	char *str;
+	flags = malloc(sizeof(t_opt));
+	initflag(flags);
+	str = parseinput(argv, flags, argc);
+    upper_rl(str);
+	printflags(flags);
 }
