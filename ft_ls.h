@@ -15,7 +15,7 @@
 typedef	struct	h_dir
 {
 	//
-	int msize;
+	long msize;
 	int curdir;
 	size_t groupsize;
 	size_t ownersize;

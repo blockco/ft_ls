@@ -1,6 +1,25 @@
 #include "ft_ls.h"
 #include <stdio.h>
 
+char* denyname(char *str)
+{
+	int i;
+	int a;
+	char *ret;
+
+	i = 2;
+	a = 0;
+	ret = malloc(ft_strlen(str) - 1);
+	while(str[i])
+	{
+		ret[a] = str[i];
+		i++;
+		a++;
+	}
+	ret[a] = '\0';
+	return ret;
+}
+
 int findmsize(char *str)
 {
 	int msize;
@@ -11,10 +30,19 @@ int findmsize(char *str)
 	errno = 0;
 	dir = opendir (str);
 	if (errno == EACCES)
+	{
+		ft_printf("%s\n%s%s%s\n\n", str, "ls: " , denyname(str) , ": Permission denied");
 		return(0);
-	while ((dp = readdir (dir)) != NULL)
-		msize++;
-	closedir(dir);
+	}
+	ft_putnbr(errno);
+	ft_putchar('\n');
+	ft_putendl("here");
+	if (dir)
+	{
+		while ((dp = readdir (dir)) != NULL)
+			msize++;
+		closedir(dir);
+	}
 	return msize;
 }
 
@@ -49,6 +77,7 @@ void mallocstruct(h_dir **current)
 	curr->print = (int*)malloc(sizeof(int) * curr->msize);
 	curr->owner = (char**)malloc(sizeof(char*) * curr->msize);
 	curr->islnk = (int*)malloc(sizeof(int) * curr->msize);
+
 
 	curr->blocks = 0;
 	curr->longest = 0;
@@ -180,12 +209,13 @@ void initstruct(h_dir **current, char *str)
 		block_t += getlnk(sb_l, &curr, i);
 		i++;
 	}
+	closedir(dir);
 	curr->blocks = block_t;
 }
 
 int checkinf(char *str)
 {
-	if ((ft_strcmp(str,".") == 0 ) || (ft_strcmp(str,"..") == 0))
+	if ((ft_strcmp(str,".") == 0 ) || (ft_strcmp(str,"..") == 0) )
 		return (0);
 	return(1);
 }
@@ -324,6 +354,7 @@ void upper_rl(char *str, int first)
 	char *key;
 
 	curr = malloc(sizeof(h_dir));
+	curr->msize = 0;
 	curr->msize = findmsize(str);
 	initstruct(&curr, str);
 	findmax(&curr);
@@ -354,7 +385,7 @@ void upper_rl(char *str, int first)
 	while(i < curr->msize)
 	{
 
-		if(curr->list[curr->print[i]] && curr->visible[curr->print[i]] && curr->isdir[curr->print[i]]
+		if(curr->list[curr->print[i]] && curr->isdir[curr->print[i]]
 			&& checkinf(curr->list[curr->print[i]]) && !curr->islnk[curr->print[i]])
 		{
 			upper_rl(makepath(str, curr->list[curr->print[i]]), first);
