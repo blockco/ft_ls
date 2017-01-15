@@ -34,9 +34,6 @@ int findmsize(char *str)
 		ft_printf("%s\n%s%s%s\n\n", str, "ls: " , denyname(str) , ": Permission denied");
 		return(0);
 	}
-	ft_putnbr(errno);
-	ft_putchar('\n');
-	ft_putendl("here");
 	if (dir)
 	{
 		while ((dp = readdir (dir)) != NULL)
@@ -354,7 +351,6 @@ void upper_rl(char *str, int first)
 	char *key;
 
 	curr = malloc(sizeof(h_dir));
-	curr->msize = 0;
 	curr->msize = findmsize(str);
 	initstruct(&curr, str);
 	findmax(&curr);
@@ -406,6 +402,7 @@ void initflag(t_opt *flags)
 
 void checkflag(char c, t_opt *flags)
 {
+	ft_putendl("here");
 	if (c == 'l')
 		flags->l_op = 1;
 	else if (c == 'R')
@@ -423,7 +420,7 @@ char *parseinput(const char **input, t_opt *flags, int argc)
 	int i;
 	int c;
 
-	i = 2;
+	i = 1;
 	while (i < argc)
 	{
 		c = 0;
@@ -431,7 +428,7 @@ char *parseinput(const char **input, t_opt *flags, int argc)
 			checkflag(input[i][c++], flags);
 		i++;
 	}
-	if (input[1] == NULL)
+	if (input[1][0] == '-')
 		return (ft_strdup("."));
 	return(ft_strdup(input[1]));
 }
@@ -447,7 +444,10 @@ int main(int argc, char const *argv[])
 	char *str;
 	flags = malloc(sizeof(t_opt));
 	initflag(flags);
-	str = parseinput(argv, flags, argc);
+	if (argc > 1)
+		str = parseinput(argv, flags, argc);
+	else
+		str = ft_strdup(".");
     upper_rl(str, 0);
 	printflags(flags);
 }
