@@ -278,8 +278,14 @@ int time_sort(h_dir **current, int pos1, int pos2)
 
 	curr = *current;
 	if (curr->time_v[pos1] - curr->time_v[pos2] == 0)
-		return (curr->mtim_n[pos1] - curr->mtim_n[pos2] < 0);
-	return (curr->time_v[pos1] - curr->time_v[pos2] < 0);
+	{
+		if (curr->mtim_n[pos1] - curr->mtim_n[pos2] == 0)
+			return (ft_strcmp(curr->list[pos1], curr->list[pos2]) > 0);
+		else
+			return (curr->mtim_n[pos1] - curr->mtim_n[pos2] < 0);
+	}
+	else
+		return (curr->time_v[pos1] - curr->time_v[pos2] < 0);
 }
 
 void findmax(h_dir **current)
@@ -501,9 +507,79 @@ void ls_l(char *str)
 	}
 }
 
+void ls_la(char *str)
+{
+	h_dir *curr;
+	int i;
+	char* temp;
+	char *key;
+
+	curr = malloc(sizeof(h_dir));
+	curr->msize = findmsize(str);
+	initstruct(&curr, str);
+	findmax(&curr);
+	lex_sort(&curr, name_sort);
+	key = makekey(&curr);
+	i = 0;
+	while(i < curr->msize)
+	{
+		if (i == 0)
+		{
+			temp = makepath(str, curr->list[curr->print[i]]);
+			temp[ft_strlen(temp) - 1] = '\0';
+			ft_printf("%s%lld\n", "total ",(curr->blocks));
+		}
+		trimtime(curr->mtim[curr->print[i]]);
+		ft_printf(key, curr->permd[curr->print[i]], curr->l_count[curr->print[i]] ,curr->owner[curr->print[i]], curr->group[curr->print[i]],
+		ft_itoa_base(curr->size[curr->print[i]], 10), settime(curr->mtim[curr->print[i]]), curr->list[curr->print[i]]);
+		if (curr->islnk[curr->print[i]])
+			ft_printf("%s%s", " -> ", printlnk(makepath(str, curr->list[curr->print[i]])));
+		else
+			ft_putchar('\n');
+		i++;
+	}
+}
+
+void ls_lta(char *str)
+{
+	h_dir *curr;
+	int i;
+	char* temp;
+	char *key;
+
+	curr = malloc(sizeof(h_dir));
+	curr->msize = findmsize(str);
+	initstruct(&curr, str);
+	findmax(&curr);
+	lex_sort(&curr, time_sort);
+	key = makekey(&curr);
+	i = 0;
+	while(i < curr->msize)
+	{
+		if (i == 0)
+		{
+			temp = makepath(str, curr->list[curr->print[i]]);
+			temp[ft_strlen(temp) - 1] = '\0';
+			ft_printf("%s%lld\n", "total ",(curr->blocks));
+		}
+		trimtime(curr->mtim[curr->print[i]]);
+		ft_printf(key, curr->permd[curr->print[i]], curr->l_count[curr->print[i]] ,curr->owner[curr->print[i]], curr->group[curr->print[i]],
+		ft_itoa_base(curr->size[curr->print[i]], 10), settime(curr->mtim[curr->print[i]]), curr->list[curr->print[i]]);
+		if (curr->islnk[curr->print[i]])
+			ft_printf("%s%s", " -> ", printlnk(makepath(str, curr->list[curr->print[i]])));
+		else
+			ft_putchar('\n');
+		i++;
+	}
+}
+
 void dispatchls(t_opt *flags, char *str)
 {
-	if (flags->l_op)
+	if (flags->l_op && flags->a_op && flags->t_op)
+		ls_lta(str);
+	else if (flags->l_op && flags->a_op)
+		ls_la(str);
+	else if (flags->l_op)
 		ls_l(str);
 }
 
