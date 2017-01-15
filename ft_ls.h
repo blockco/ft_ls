@@ -49,6 +49,7 @@ typedef	struct	h_dir
 	int *visible;
 	int *print;
 	long long blocks;
+	long long v_block;
 	int *islnk;
 }				h_dir;
 
