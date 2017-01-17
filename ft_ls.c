@@ -362,8 +362,12 @@ char* makekey(h_dir **current)
 {
 	char	*key;
 	h_dir *curr;
+	int i;
 
+	i = 0;
 	curr = *current;
+	if (curr->linksize > 10)
+		i = 1;
 	key = betterjoin("%-12s%-", (ft_itoa_base((curr->linksize + 1), 10)));
 	key = betterjoin(key, "s%-");
 	key = betterjoin(key, (ft_itoa_base((curr->ownersize + 2), 10)));
@@ -761,7 +765,6 @@ void makerev(h_dir *curr)
 		i--;
 		count++;
 	}
-	ft_putendl("here");
 	curr->print = ret;
 }
 
@@ -798,7 +801,6 @@ void upper_rl(char *str, int first, t_opt *flags)
 {
 	h_dir *curr;
 	int i;
-	char* temp;
 	char *key;
 
 	curr = malloc(sizeof(h_dir));
@@ -816,10 +818,8 @@ void upper_rl(char *str, int first, t_opt *flags)
 	{
 		if (i == 0)
 		{
-			temp = makepath(str, curr->list[curr->print[i]]);
-			temp[ft_strlen(temp) - 1] = '\0';
 		if (first++)
-			ft_printf("\n%s:\n", temp);
+			ft_printf("\n%s:\n", str);
 		if (flags->a_op)
 			curr->v_block = 0;
 		ft_printf("%s%lld\n", "total ",(curr->blocks - curr->v_block));
