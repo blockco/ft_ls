@@ -348,10 +348,7 @@ char* makekey(h_dir **current)
 	key = betterjoin(key, (ft_itoa_base((curr->ownersize + 2), 10)));
 	key = betterjoin(key, "s%-");
 	key = betterjoin(key, ft_itoa_base((curr->groupsize + 2), 10));
-	key = betterjoin(key,"s%-");
-	key = betterjoin(key, ft_itoa_base((curr->sizeprint + 1), 10));
-	key = betterjoin(key, "s%-13");
-	key = betterjoin(key, "s%-0s");
+	key =betterjoin(key, "s");
 	return key;
 }
 
@@ -749,7 +746,14 @@ void handle_op_l(h_dir *curr, t_opt *flags)
 		makerev(curr);
 }
 
+void printrest(h_dir *curr, int i)
+{
+	char *key;
 
+	key = ft_strdup("%s%s%s%-13s%s");
+	ft_printf(key, makespace(curr->sizeprint - ft_strlen(ft_itoa_base(curr->size[i], 10)), ' '),
+	ft_itoa_base(curr->size[i], 10), " ", settime(curr->mtim[i]), curr->list[i]);
+}
 
 void upper_rl(char *str, int first, t_opt *flags)
 {
@@ -777,15 +781,20 @@ void upper_rl(char *str, int first, t_opt *flags)
 			temp[ft_strlen(temp) - 1] = '\0';
 		if (first++)
 			ft_printf("\n%s:\n", temp);
-		ft_printf("%s%lld\n", "total ",curr->blocks);
+		if (flags->a_op)
+			curr->v_block = 0;
+		ft_printf("%s%lld\n", "total ",(curr->blocks - curr->v_block));
 		}
-		trimtime(curr->mtim[curr->print[i]]);
-		ft_printf(key, curr->permd[curr->print[i]], curr->l_count[curr->print[i]] ,curr->owner[curr->print[i]], curr->group[curr->print[i]],
-		ft_itoa_base(curr->size[curr->print[i]], 10), curr->list[curr->print[i]], curr->mtim[curr->print[i]]);
-		if (curr->islnk[curr->print[i]])
-			ft_printf("%s%s\n", " -> ", printlnk(makepath(str, curr->list[curr->print[i]])));
-		else
-			ft_putchar('\n');
+		if (curr->visible[curr->print[i]])
+		{
+			trimtime(curr->mtim[curr->print[i]]);
+			ft_printf(key, curr->permd[curr->print[i]], curr->l_count[curr->print[i]] ,curr->owner[curr->print[i]], curr->group[curr->print[i]]);
+			printrest(curr, curr->print[i]);
+			if (curr->islnk[curr->print[i]])
+				ft_printf("%s%s\n", " -> ", printlnk(makepath(str, curr->list[curr->print[i]])));
+			else
+				ft_putchar('\n');
+		}
 		i++;
 	}
 	i = 0;
