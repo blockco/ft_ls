@@ -1,5 +1,4 @@
 #include "ft_ls.h"
-#include <stdio.h>
 
 char* denyname(char *str)
 {
@@ -74,6 +73,9 @@ void mallocstruct(h_dir **current)
 	curr->print = (int*)malloc(sizeof(int) * curr->msize);
 	curr->owner = (char**)malloc(sizeof(char*) * curr->msize);
 	curr->islnk = (int*)malloc(sizeof(int) * curr->msize);
+	curr->isblock = (int*)malloc(sizeof(int) * curr->msize);
+	curr->block_dev = (long*)malloc(sizeof(long) * curr->msize);
+	curr->block_min = (long*)malloc(sizeof(long) * curr->msize);
 
 
 	curr->blocks = 0;
@@ -84,14 +86,16 @@ void mallocstruct(h_dir **current)
 	curr->v_block = 0;
 }
 
-char* intit_perm(int isdir)
+char* intit_perm(int isdir, int islnk)
 {
 	if (isdir)
 		return(ft_strdup("d"));
+	else if (islnk)
+		return(ft_strdup("l"));
 	return(ft_strdup("-"));
 }
 
-char* permstr(char *perm, int isdir)
+char* permstr(char *perm, int isdir, int isdev, int islnk)
 {
 	int i;
 	char *ret;
@@ -99,7 +103,7 @@ char* permstr(char *perm, int isdir)
 		i = 2;
 	else
 		i = 3;
-	ret = intit_perm(isdir);
+	ret = intit_perm(isdir, islnk);
 	while (perm[i])
 	{
 		if(perm[i] == '7')
@@ -120,6 +124,8 @@ char* permstr(char *perm, int isdir)
 			ret = betterjoin(ret, "---");
 		i++;
 	}
+	if (isdev)
+		ret = betterjoin("crw", ret);
 	return (ret);
 }
 
@@ -149,6 +155,12 @@ int getlnk(struct stat sb_l, h_dir **current, int i)
 		perror("getgrgid()");
 		exit(EXIT_FAILURE);
 	}
+	if ((sb_l.st_mode & S_IFMT) == S_IFBLK || (sb_l.st_mode & S_IFMT) == S_IFCHR)
+	{
+		curr->isblock[i] = 1;
+		curr->block_min[i] = minor(sb_l.st_rdev);
+		curr->hasblock = 1;
+	}
 	if ((sb_l.st_mode & S_IFMT) == S_IFDIR)
 		curr->isdir[i] = 1;
 	else
@@ -164,6 +176,7 @@ int getlnk(struct stat sb_l, h_dir **current, int i)
 	curr->owner[i] = ft_strdup(pwuser->pw_name);
 	curr->group[i] = ft_strdup(grpnam->gr_name);
 	curr->size[i] = sb_l.st_size;
+	curr->block_dev[i] = major(sb_l.st_rdev);
 	curr->atim[i] = ft_strdup(ctime(&sb_l.st_atime));
 	curr->atim_s[i] = (long long)sb_l.st_atimespec.tv_sec;
 	curr->atim_n[i] = (long)sb_l.st_atimespec.tv_nsec;
@@ -174,7 +187,7 @@ int getlnk(struct stat sb_l, h_dir **current, int i)
 	curr->time_v[i] = sb_l.st_mtime;
 	curr->ctim_s[i] = (long long)sb_l.st_ctimespec.tv_sec;
 	curr->ctim_n[i] = (long)sb_l.st_ctimespec.tv_nsec;
-	curr->permd[i] = ft_strdup(permstr(ft_itoa_base(sb_l.st_mode, 8), curr->isdir[i]));
+	curr->permd[i] = ft_strdup(permstr(ft_itoa_base(sb_l.st_mode, 8), curr->isdir[i], curr->isblock[i], curr->islnk[i]));
 	curr->l_count[i] = ft_itoa_base(sb_l.st_nlink, 10);
 	return(sb_l.st_blocks);
 }
@@ -303,10 +316,18 @@ void findmax(h_dir **current)
 			curr->longest = ft_strlen(curr->list[i]);
 		if (ft_strlen(curr->owner[i]) > curr->ownersize)
 			curr->ownersize = ft_strlen(curr->owner[i]);
+
 		if (ft_strlen(ft_itoa_base(curr->size[i], 10)) > curr->sizeprint)
 			curr->sizeprint = ft_strlen(ft_itoa_base(curr->size[i], 10));
+
+		if (ft_strlen(ft_itoa_base(curr->block_dev[i], 10)) > curr->sizeprint)
+			curr->sizeprint = ft_strlen(ft_itoa_base(curr->block_dev[i], 10));
+
 		if (ft_strlen(curr->group[i]) > curr->groupsize)
 			curr->groupsize = ft_strlen(curr->group[i]);
+
+		if (ft_strlen(ft_itoa_base(curr->block_min[i], 10)) > curr->ran)
+			curr->ran = ft_strlen(ft_itoa_base(curr->block_min[i], 10));
 		i++;
 	}
 }
@@ -376,28 +397,33 @@ void checkflag(char c, t_opt *flags)
 		flags->t_op = 1;
 }
 
+void printflags(t_opt *flags)
+{
+	ft_printf("%d\n%d\n%d\n%d\n%d\n%d\n", flags->l_op,flags->reg_ls,flags->rec_op,flags->a_op,flags->rev_op,flags->t_op);
+}
+
 char *parseinput(const char **input, t_opt *flags, int argc)
 {
 	int i;
 	int c;
+	char *str;
 
 	i = 1;
-	while (i < argc)
+	if (input[1][0] == '-')
+		str = ft_strdup(".");
+	else
+	{
+		str = ft_strdup(input[1]);
+		i++;
+	}
+	while (i < argc && (input[i][0] == '-'))
 	{
 		c = 0;
 		while(input[i][c])
 			checkflag(input[i][c++], flags);
 		i++;
 	}
-	if (input[argc - 1][0] != '-')
-		return(ft_strdup(input[argc - 1]));
-	else
-		return (ft_strdup("."));
-}
-
-void printflags(t_opt *flags)
-{
-	ft_printf("%d\n%d\n%d\n%d\n%d\n%d\n", flags->l_op,flags->reg_ls,flags->rec_op,flags->a_op,flags->rev_op,flags->t_op);
+	return str;
 }
 
 char* settime(char *str)
@@ -735,6 +761,7 @@ void makerev(h_dir *curr)
 		i--;
 		count++;
 	}
+	ft_putendl("here");
 	curr->print = ret;
 }
 
@@ -750,7 +777,19 @@ void printrest(h_dir *curr, int i)
 {
 	char *key;
 
-	key = ft_strdup("%s%s%s%-13s%s");
+	key = ft_strdup("%s%s%s%s%s%s%-13s%-0s");
+	if (curr->isblock[i])
+	{
+		ft_printf(key, makespace(curr->sizeprint - ft_strlen(ft_itoa_base(curr->block_dev[i] + 1, 10)), ' '),
+		ft_itoa_base(curr->block_dev[i], 10), ",", makespace((curr->ran - ft_strlen(ft_itoa_base(curr->block_min[i], 10)) + 1), ' '), ft_itoa_base(curr->block_min[i], 10),  " ",settime(curr->mtim[i]), curr->list[i],
+		curr->list[i]);
+		return;
+	}
+	if (curr->hasblock)
+	{
+		ft_printf("%s", makespace((curr->ran + 2), ' '));
+	}
+	key = ft_strdup("%s%s%s%-13s%-0s");
 	ft_printf(key, makespace(curr->sizeprint - ft_strlen(ft_itoa_base(curr->size[i], 10)), ' '),
 	ft_itoa_base(curr->size[i], 10), " ", settime(curr->mtim[i]), curr->list[i]);
 }
@@ -814,7 +853,7 @@ void dispatchls(t_opt *flags, char *str)
 	if (!flags->l_op)
 		ls_norm(str, flags, 0);
 	else
-	upper_rl(str, 0, flags);
+		upper_rl(str, 0, flags);
 }
 
 int main(int argc, char const *argv[])

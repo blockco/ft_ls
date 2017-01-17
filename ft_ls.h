@@ -30,6 +30,7 @@ typedef	struct	h_dir
 	int *isdir;
 	long *size;
 	long *time_v;
+	int hasblock;
 
 	char **atim;
 	long long *atim_s;
@@ -45,12 +46,17 @@ typedef	struct	h_dir
 
 	char **permd;
 	char **group;
-	//imp
+	//imp1
 	int *visible;
+
+	int *isblock;
+	long *block_dev;
+	long *block_min;
 	int *print;
 	long long blocks;
 	long long v_block;
 	int *islnk;
+	size_t ran;
 }				h_dir;
 
 typedef	struct	t_opt
@@ -77,10 +83,10 @@ int findmsize(char *str);
 void mallocstruct(h_dir **current);
 
 //sets d in permissions
-char* intit_perm(int isdir);
+char* intit_perm(int isdir, int islnk);
 
 //sets up the permissions
-char* permstr(char *perm, int isdir);
+char* permstr(char *perm, int isdir, int isdev, int islnk);
 
 //gets the info for individual peice
 int getlnk(struct stat sb_l, h_dir **current, int i);
