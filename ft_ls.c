@@ -343,7 +343,7 @@ char* makekey(h_dir **current)
 	h_dir *curr;
 
 	curr = *current;
-	key = betterjoin("%-12s%-", (ft_itoa_base((curr->linksize), 10)));
+	key = betterjoin("%-12s%-", (ft_itoa_base((curr->linksize + 1), 10)));
 	key = betterjoin(key, "s%-");
 	key = betterjoin(key, (ft_itoa_base((curr->ownersize + 2), 10)));
 	key = betterjoin(key, "s%-");
@@ -351,9 +351,7 @@ char* makekey(h_dir **current)
 	key = betterjoin(key,"s%-");
 	key = betterjoin(key, ft_itoa_base((curr->sizeprint + 1), 10));
 	key = betterjoin(key, "s%-13");
-	key = betterjoin(key, "s%-");
-	key = betterjoin(key, ft_itoa_base((curr->longest + 2), 10));
-	key = betterjoin(key, "s");
+	key = betterjoin(key, "s%-0s");
 	return key;
 }
 
@@ -573,14 +571,227 @@ void ls_lta(char *str)
 	}
 }
 
+char* normkey(h_dir *curr)
+{
+	char *ret;
+	ret = betterjoin("%-", ft_itoa_base((curr->longest + 1), 10));
+	ret = betterjoin(ret, "s");
+	return (ret);
+}
+
+// void ls_norm(char *str)
+// {
+// 	h_dir *curr;
+// 	int i;
+// 	int write;
+// 	char *key;
+//
+// 	curr = malloc(sizeof(h_dir));
+// 	curr->msize = findmsize(str);
+// 	initstruct(&curr, str);
+// 	findmax(&curr);
+// 	lex_sort(&curr, name_sort);
+// 	key = normkey(curr);
+// 	i = 0;
+// 	write = 0;
+// 	while(i < curr->msize)
+// 	{
+// 		if (curr->visible[curr->print[i]])
+// 		{
+// 			ft_printf(key, curr->list[curr->print[i]]);
+// 			write += curr->longest + 1;
+// 		}
+// 		if (write >= 50)
+// 		{
+// 			ft_putchar('\n');
+// 			write = 0;
+// 		}
+// 		i++;
+// 	}
+// }
+
+void makerev(h_dir *curr)
+{
+	int i;
+	int *ret;
+	int count;
+
+	count = 0;
+	i = curr->msize;
+	ret = (int*)malloc(sizeof(int) * curr->msize);
+	i--;
+	while (i > -1)
+	{
+		ret[count] = curr->print[i];
+		i--;
+	}
+	curr->print = ret;
+}
+
+void makevisible(h_dir *curr)
+{
+	int i;
+
+	i = 0;
+	while (i < curr->msize)
+	{
+		curr->visible[i] = 1;
+		i++;
+	}
+}
+
+void handle_op(h_dir *curr, t_opt *flags)
+{
+	if (flags->a_op)
+		makevisible(curr);
+}
+
+void revprint(h_dir *curr)
+{
+	int temp;
+
+	temp = curr->msize;
+	temp--;
+	while(temp > -1)
+	{
+		if (curr->visible[curr->print[temp]])
+			ft_printf("%s\n", curr->list[curr->print[temp]]);
+		temp--;
+	}
+}
+
+void normprint(h_dir *curr)
+{
+	int i;
+
+	i = 0;
+	while(i < curr->msize)
+	{
+		if (curr->visible[curr->print[i]])
+			ft_printf("%s\n", curr->list[curr->print[i]]);
+		i++;
+	}
+}
+
+void ls_norm(char *str, t_opt *flags, int first)
+{
+	h_dir *curr;
+	int i;
+	char *key;
+	char *temp;
+
+	curr = malloc(sizeof(h_dir));
+	curr->msize = findmsize(str);
+	initstruct(&curr, str);
+	findmax(&curr);
+	if (flags->t_op)
+		lex_sort(&curr, time_sort);
+	else
+		lex_sort(&curr, name_sort);
+	handle_op(curr ,flags);
+	key = normkey(curr);
+	temp = makepath(str, curr->list[curr->print[0]]);
+	temp[ft_strlen(temp) - 1] = '\0';
+	if (first++)
+		ft_printf("\n%s:\n", temp);
+	if (flags->rev_op)
+		revprint(curr);
+	else
+		normprint(curr);
+	i = 0;
+	while(i < curr->msize && flags->rec_op)
+	{
+		if(curr->list[curr->print[i]] && curr->visible[curr->print[i]] &&curr->isdir[curr->print[i]]
+			&& checkinf(curr->list[curr->print[i]]) && !curr->islnk[curr->print[i]])
+		{
+			ls_norm(makepath(str, curr->list[curr->print[i]]), flags, first);
+		}
+	i++;
+	}
+}
+
+void revprint_l(h_dir *curr, char *str)
+{
+	int temp;
+
+	temp = curr->msize;
+	temp--;
+	while(temp > -1)
+	{
+		if (curr->visible[curr->print[temp]])
+		{
+			ft_printf(makekey(&curr), curr->permd[curr->print[temp]], curr->l_count[curr->print[temp]] ,curr->owner[curr->print[temp]], curr->group[curr->print[temp]],
+			ft_itoa_base(curr->size[curr->print[temp]], 10), settime(curr->mtim[curr->print[temp]]), curr->list[curr->print[temp]]);
+			if (curr->islnk[curr->print[temp]])
+				ft_printf("%s%s", " -> ", printlnk(makepath(str, curr->list[curr->print[temp]])));
+			if (curr->visible[curr->print[temp]])
+				ft_putchar('\n');
+		}
+		temp--;
+	}
+}
+
+void normprint_l(h_dir *curr, char *str)
+{
+	int i;
+
+	i = 0;
+	while(i < curr->msize)
+	{
+		if (curr->visible[curr->print[i]])
+		{
+			ft_printf(makekey(&curr), curr->permd[curr->print[i]], curr->l_count[curr->print[i]] ,curr->owner[curr->print[i]], curr->group[curr->print[i]],
+			ft_itoa_base(curr->size[curr->print[i]], 10), settime(curr->mtim[curr->print[i]]), curr->list[curr->print[i]]);
+			if (curr->islnk[curr->print[i]])
+				ft_printf("%s%s", " -> ", printlnk(makepath(str, curr->list[curr->print[i]])));
+			if (curr->visible[curr->print[i]])
+				ft_putchar('\n');
+		}
+		i++;
+	}
+}
+
+void lsdiff(char *str, t_opt *flags, int first)
+{
+	h_dir *curr;
+	int i;
+	char *temp;
+
+	curr = malloc(sizeof(h_dir));
+	curr->msize = findmsize(str);
+	initstruct(&curr, str);
+	findmax(&curr);
+	if (flags->t_op)
+		lex_sort(&curr, time_sort);
+	else
+		lex_sort(&curr, name_sort);
+	handle_op(curr ,flags);
+	temp = makepath(str, curr->list[curr->print[0]]);
+	temp[ft_strlen(temp) - 1] = '\0';
+	if (first++)
+		ft_printf("\n%s:\n", temp);
+	if (flags->rev_op)
+		revprint_l(curr, str);
+	else
+		normprint_l(curr, str);
+	i = 0;
+	while(i < curr->msize && flags->rec_op)
+	{
+		if(curr->list[curr->print[i]] && curr->visible[curr->print[i]] &&curr->isdir[curr->print[i]]
+			&& checkinf(curr->list[curr->print[i]]) && !curr->islnk[curr->print[i]])
+		{
+			lsdiff(makepath(str, curr->list[curr->print[i]]), flags, first);
+		}
+	i++;
+	}
+}
+
 void dispatchls(t_opt *flags, char *str)
 {
-	if (flags->l_op && flags->a_op && flags->t_op)
-		ls_lta(str);
-	else if (flags->l_op && flags->a_op)
-		ls_la(str);
-	else if (flags->l_op)
-		ls_l(str);
+	if (!flags->l_op)
+		ls_norm(str, flags, 0);
+	else
+		lsdiff(str, flags, 0);
 }
 
 int main(int argc, char const *argv[])
@@ -594,5 +805,4 @@ int main(int argc, char const *argv[])
 	else
 		str = ft_strdup(".");
 	dispatchls(flags, str);
-	//upper_rl(str, 0);
 }
