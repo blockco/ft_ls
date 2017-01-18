@@ -12,8 +12,13 @@
 # include <errno.h>
 # include "./ft_printf/ft_printf.h"
 
+#define	SIXMONTHS	((365 / 2) * 86400)
+
 typedef	struct	h_dir
 {
+	long *savetime;
+	int *old;
+	char **year;
 	//
 	long msize;
 	int curdir;
@@ -36,9 +41,13 @@ typedef	struct	h_dir
 	long long *atim_s;
 	long *atim_n;
 
+
+
 	char **mtim;
 	long long *mtim_s;
 	long *mtim_n;
+
+	long *t_value;
 
 	char **ctim;
 	long long *ctim_s;
