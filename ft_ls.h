@@ -29,7 +29,7 @@ typedef	struct	h_dir
 	size_t linksize;
 	//
 	char **l_count;
-
+ 
 	char **owner;
 	char **list;
 	int *isdir;
