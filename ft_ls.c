@@ -663,6 +663,7 @@ void ls_norm(char *str, t_opt *flags, int first)
 	int i;
 	char *key;
 	char *temp;
+	int inc;
 	curr = malloc(sizeof(h_dir));
 	curr->msize = findmsize(str);
 	if (curr->msize == 0)
@@ -683,8 +684,17 @@ void ls_norm(char *str, t_opt *flags, int first)
 		revprint(curr);
 	else
 		normprint(curr);
-	i = 0;
-	while(i < curr->msize && flags->rec_op)
+	if (flags->rev_op)
+	{
+		i = curr->msize - 1;
+		inc = -1;
+	}
+	else
+	{
+		i = 0;
+		inc = 1;
+	}
+	while(i > -1 && i < curr->msize && flags->rec_op)
 	{
 		if(curr->list[curr->print[i]] && curr->visible[curr->print[i]] &&curr->isdir[curr->print[i]]
 			&& checkinf(curr->list[curr->print[i]]) && !curr->islnk[curr->print[i]])
@@ -693,7 +703,7 @@ void ls_norm(char *str, t_opt *flags, int first)
 				ft_printf("\n");
 			ls_norm(makepath(str, curr->list[curr->print[i]]), flags, first);
 		}
-	i++;
+	i = i + inc;
 	}
 }
 
