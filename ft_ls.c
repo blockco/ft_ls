@@ -930,7 +930,6 @@ void dispatchls(t_opt *flags, char **dir, int d_num)
 {
 	int i;
 	int inc;
-
 	if (flags->rev_op)
 	{
 		i = d_num - 1;
@@ -943,11 +942,12 @@ void dispatchls(t_opt *flags, char **dir, int d_num)
 	}
 	if (!flags->l_op)
 	{
-		while (i > -1 && i < d_num)
+		while (i > -1 && i < arraysize(dir))
 		{
 			if (d_num > 1 && dir[i])
 				ft_putendl(betterjoin(dir[i], ":"));
 			ls_norm(dir[i], flags, 0);
+			//ft_putendl("here");
 			i = i + inc;
 			if (d_num > 1 && (i > -1 && i < arraysize(dir)))
 				ft_putendl("");
@@ -1002,22 +1002,41 @@ char **checkexist(char **dirs, int d_size)
 	DIR *dir;
 	int i;
 	int a;
+	int found;
 
 	a = 0;
 	i = 0;
+	found = 0;
 	ret = (char**)malloc(sizeof(char*) * d_size + 1);
 	ret[d_size] = NULL;
 	while (i < d_size)
 	{
+		errno = 0;
 		dir = opendir (dirs[i]);
 		if (!dir)
 		{
-			ft_printf("%s%s%s\n", "ls: ", dirs[i], ": No such file or directory");
+			if (errno == 20)
+			{
+				if (found)
+					ft_putchar('\n');
+				found = 0;
+				ft_putendl(dirs[i]);
+			}
+			else
+			{
+				found = 1;
+				ft_printf("%s%s%s", "ls: ", dirs[i], ": No such file or directory");
+			}
 		}
 		else
+		{
 			ret[a++] = ft_strdup(dirs[i]);
+			closedir(dir);
+		}
 		i++;
 	}
+	if (a < d_size)
+		ft_putchar('\n');
 	ret[a] = NULL;
 	return(ret); //fix
 }
@@ -1052,6 +1071,6 @@ int main(int argc, char const *argv[])
 	// ft_putnbr(arraysize(dirs));
 	// ft_putchar('\n');
 	// ft_putnbr(d_size);
-	// ft_putchar('\n');
+	// ft_putchar('\n);
 	dispatchls(flags, dirs, d_size);
 }
