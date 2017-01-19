@@ -653,7 +653,6 @@ void ls_norm(char *str, t_opt *flags, int first)
 	int i;
 	char *key;
 	char *temp;
-
 	curr = malloc(sizeof(h_dir));
 	curr->msize = findmsize(str);
 	initstruct(&curr, str);
@@ -847,8 +846,8 @@ void printrest(h_dir *curr, int i)
 	key = ft_strdup("%s%s%s%-13s%-0s");
 	ft_printf(key, makespace(curr->sizeprint - ft_strlen(ft_itoa_base(curr->size[i], 10)), ' '),
 	ft_itoa_base(curr->size[i], 10), " ", settime(curr->mtim[i],curr->old[i], curr->year[i]), curr->list[i]);
-	// if (curr->old[i])
-	// 	ft_putendl("\nis old");
+	//if (curr->old[i])
+	//	ft_putendl("\nis old");
 }
 
 void upper_rl(char *str, int first, t_opt *flags)
@@ -902,23 +901,97 @@ void upper_rl(char *str, int first, t_opt *flags)
 	}
 }
 
-void dispatchls(t_opt *flags, char *str)
+void dispatchls(t_opt *flags, char **dir, int d_num)
 {
-	if (!flags->l_op)
-		ls_norm(str, flags, 0);
+	int i;
+	int inc;
+
+	if (!flags->rev_op)
+	{
+		i = d_num - 1;
+		inc = -1;
+	}
 	else
-		upper_rl(str, 0, flags);
+	{
+		i = 0;
+		inc = 1;
+	}
+	if (!flags->l_op)
+	{
+		while (i > -1 && i < d_num)
+		{
+			if (d_num > 1)
+				ft_putendl(betterjoin(dir[i], ":"));
+			ls_norm(dir[i], flags, 0);
+			i = i + inc;
+			if (d_num > 1 && (i > -1 || i < d_num))
+				ft_putendl("");
+		}
+	}
+	else
+	{
+		while (i > -1 && i < d_num)
+		{
+			if (d_num > 1 && dir[i])
+				ft_putendl(betterjoin(dir[i], ":"));
+			upper_rl(dir[i], 0, flags);
+			i = i + inc;
+			if (d_num > 1 && (i > -1 && i < d_num))
+				ft_putendl("");
+		}
+	}
+}
+
+char **storedirs(const char **argv, int *count)
+{
+	int i;
+	char **ret;
+
+	i = 1;
+	*count = 0;
+	while(argv[i])
+	{
+		if (argv[i][0] != '-')
+			*count = *count + 1;
+		i++;
+	}
+	ret = (char**)malloc(sizeof(char*) * *count + 1);
+	*count = 0;
+	i = 1;
+	while(argv[i])
+	{
+		if (argv[i][0] != '-')
+		{
+			ret[*count] = ft_strdup(argv[i]);
+			*count = *count + 1;
+		}
+		i++;
+	}
+	ret[*count] = NULL;
+	return ret;
 }
 
 int main(int argc, char const *argv[])
 {
 	t_opt *flags;
-	char *str;
+	char **dirs;
+	int d_size;
+
+	d_size = 0;
+	dirs = NULL;
 	flags = malloc(sizeof(t_opt));
 	initflag(flags);
 	if (argc > 1)
-		str = parseinput(argv, flags, argc);
-	else
-		str = ft_strdup(".");
-	dispatchls(flags, str);
+		dirs = storedirs(argv, &d_size);
+	if (argc > 1)
+		parseinput(argv, flags, argc);
+	if (d_size == 0)
+	{
+		dirs = (char**)malloc(sizeof(char*) * 2);
+		dirs[0] = ft_strdup(".");
+		dirs[1] = NULL;
+		d_size = 1;
+	}
+
+	dispatchls(flags, dirs, d_size);
 }
