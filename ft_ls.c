@@ -1,5 +1,5 @@
-#include "ft_ls.h"
 
+#include "ft_ls.h"
 void timefix(char *time_s)
 {
 	time_s = ft_strsub(time_s, 5, (ft_strlen(time_s) - 5));
@@ -233,6 +233,40 @@ int getlnk(struct stat sb_l, h_dir **current, int i)
 	curr->permd[i] = ft_strdup(permstr(ft_itoa_base(sb_l.st_mode, 8), curr->isdir[i], curr->isblock[i], curr->islnk[i]));
 	curr->l_count[i] = ft_itoa_base(sb_l.st_nlink, 10);
 	return(sb_l.st_blocks);
+}
+
+void initial(h_dir **current, char **str)
+{
+	int temp;
+	int i;
+	struct stat sb_l;
+	h_dir *curr;
+	long long block;
+
+	block = 0;
+	i = 0;
+	curr = *current;
+	mallocstruct(&curr);
+	errno = 0;
+	if (errno == EACCES)
+		return;
+	while (str[i] != NULL)
+	{
+		if (-1 == lstat(makepath(".", str[i]), &sb_l))
+		{
+			perror("name overload");
+			exit(EXIT_FAILURE);
+		}
+		curr->list[i] = ft_strdup(str[i]);
+		temp = getlnk(sb_l, &curr, i);
+		block += temp;
+		if (curr->visible[i] == 0)
+		{
+			curr->v_block += temp;
+		}
+		i++;
+	}
+	curr->blocks = block;
 }
 
 void initstruct(h_dir **current, char *str)
@@ -965,7 +999,7 @@ void dispatchls(t_opt *flags, char **dir, int d_num)
 	}
 	else
 	{
-		while (i > -1 && i < d_num)
+		while (i > -1 && i < d_num && dir[i])
 		{
 			if (d_num > 1 && dir[i])
 				ft_putendl(betterjoin(dir[i], ":"));
@@ -1006,18 +1040,23 @@ char **storedirs(const char **argv, int *count)
 	return ret;
 }
 
-char **checkexist(char **dirs, int d_size)
+char **checkexist(char **dirs, int d_size, h_dir *curr)
 {
 	char **ret;
 	DIR *dir;
 	int i;
 	int a;
+	int b;
+	char **temp;
+
 	int found;
 
 	a = 0;
 	i = 0;
+	b = 0;
 	found = 0;
 	ret = (char**)malloc(sizeof(char*) * d_size + 1);
+	temp = (char**)malloc(sizeof(char*) * d_size + 1);
 	ret[d_size] = NULL;
 	while (i < d_size)
 	{
@@ -1027,15 +1066,12 @@ char **checkexist(char **dirs, int d_size)
 		{
 			if (errno == 20)
 			{
-				if (found)
-					ft_putchar('\n');
-				found = 0;
-				ft_putendl(dirs[i]);
+					temp[b++] = ft_strdup(dirs[i]);
 			}
 			else
 			{
 				found = 1;
-				ft_printf("%s%s%s", "ls: ", dirs[i], ": No such file or directory");
+				ft_printf("%s%s%s", "ls: ", dirs[i], ": No such file or directory\n");
 			}
 		}
 		else
@@ -1046,8 +1082,10 @@ char **checkexist(char **dirs, int d_size)
 		i++;
 	}
 	if (a < d_size)
-		ft_putchar('\n');
+		//ft_putchar('\n');
 	ret[a] = NULL;
+	temp[b] = NULL;
+	curr->list = temp;
 	return(ret); //fix
 }
 
@@ -1055,8 +1093,12 @@ int main(int argc, char const *argv[])
 {
 	t_opt *flags;
 	char **dirs;
+	char **temp;
 	int d_size;
+	h_dir *curr;
+	char *key;
 
+	curr = malloc(sizeof(h_dir));
 	d_size = 0;
 	dirs = NULL;
 	flags = malloc(sizeof(t_opt));
@@ -1072,15 +1114,36 @@ int main(int argc, char const *argv[])
 		dirs[1] = NULL;
 		d_size = 1;
 	}
-	dirs = checkexist(dirs, d_size);
-	int i;
-	i = 0;
-	// ft_putchar('\n');
-	// while(dirs[i] != NULL)
-	// 	ft_putendl(dirs[i++]);
-	// ft_putnbr(arraysize(dirs));
-	// ft_putchar('\n');
-	// ft_putnbr(d_size);
-	// ft_putchar('\n);
+	dirs = checkexist(dirs, d_size, curr);
+	int i = 0;
+	temp = curr->list;
+	curr->msize = arraysize(temp);
+	initial(&curr, temp);
+	findmax(&curr);
+	if (flags->t_op)
+		lex_sort(&curr, time_sort);
+	else if (flags->l_op)
+		lex_sort(&curr, name_sort);
+	key = makekey(&curr);
+	while (i < curr->msize)
+	{
+		if (flags->l_op)
+		{
+			ft_printf(key, curr->permd[curr->print[i]], curr->l_count[curr->print[i]] ,curr->owner[curr->print[i]], curr->group[curr->print[i]]);
+			printrest(curr, curr->print[i]);
+			if (curr->islnk[curr->print[i]])
+				ft_printf("%s%s\n", " -> ", printlnk(makepath(".", curr->list[curr->print[i]])));
+			else
+				ft_putchar('\n');
+			i++;
+		}
+		else
+			ft_putendl(curr->list[curr->print[i++]]);
+		if (!curr->list[i])
+			break;
+		temp = NULL;
+	}
+	if (temp == NULL)
+		ft_putendl("");
 	dispatchls(flags, dirs, d_size);
 }
