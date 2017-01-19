@@ -41,7 +41,7 @@ int findmsize(char *str)
 	dir = opendir (str);
 	if (errno == EACCES)
 	{
-		ft_printf("%s\n%s%s%s\n\n", str, "ls: " , denyname(str) , ": Permission denied");
+		ft_printf("%s:\n%s%s%s\n", str, "ls: " , denyname(str) , ": Permission denied");
 		return(0);
 	}
 	if (dir)
@@ -647,6 +647,16 @@ void normprint(h_dir *curr)
 	}
 }
 
+
+char *quickdirchange(char *str)
+{
+	char *ret;
+
+	ret = ft_strdup(str);
+	//ret[ft_strlen(str) - 2] = '\0';
+	return ret;
+}
+
 void ls_norm(char *str, t_opt *flags, int first)
 {
 	h_dir *curr;
@@ -655,6 +665,8 @@ void ls_norm(char *str, t_opt *flags, int first)
 	char *temp;
 	curr = malloc(sizeof(h_dir));
 	curr->msize = findmsize(str);
+	if (curr->msize == 0)
+		return;
 	initstruct(&curr, str);
 	findmax(&curr);
 	if (flags->t_op)
@@ -664,9 +676,9 @@ void ls_norm(char *str, t_opt *flags, int first)
 	handle_op(curr ,flags);
 	key = normkey(curr);
 	temp = makepath(str, curr->list[curr->print[0]]);
-	temp[ft_strlen(temp) - 1] = '\0';
+	temp[ft_strlen(temp) - 2] = '\0';
 	if (first++)
-		ft_printf("\n%s:\n", temp);
+		ft_printf("%s:\n", temp);
 	if (flags->rev_op)
 		revprint(curr);
 	else
@@ -677,6 +689,8 @@ void ls_norm(char *str, t_opt *flags, int first)
 		if(curr->list[curr->print[i]] && curr->visible[curr->print[i]] &&curr->isdir[curr->print[i]]
 			&& checkinf(curr->list[curr->print[i]]) && !curr->islnk[curr->print[i]])
 		{
+			if (first > 0)
+				ft_printf("\n");
 			ls_norm(makepath(str, curr->list[curr->print[i]]), flags, first);
 		}
 	i++;
@@ -872,9 +886,10 @@ void upper_rl(char *str, int first, t_opt *flags)
 		if (i == 0)
 		{
 		if (first++)
-			ft_printf("\n%s:\n", str);
+			ft_printf("\n%s:\n", quickdirchange(str));
 		if (flags->a_op)
 			curr->v_block = 0;
+		if (curr->blocks - curr->v_block > 0)
 		ft_printf("%s%lld\n", "total ",(curr->blocks - curr->v_block));
 		}
 		if (curr->visible[curr->print[i]])
@@ -906,7 +921,7 @@ void dispatchls(t_opt *flags, char **dir, int d_num)
 	int i;
 	int inc;
 
-	if (!flags->rev_op)
+	if (flags->rev_op)
 	{
 		i = d_num - 1;
 		inc = -1;
@@ -920,11 +935,11 @@ void dispatchls(t_opt *flags, char **dir, int d_num)
 	{
 		while (i > -1 && i < d_num)
 		{
-			if (d_num > 1)
+			if (d_num > 1 && dir[i])
 				ft_putendl(betterjoin(dir[i], ":"));
 			ls_norm(dir[i], flags, 0);
 			i = i + inc;
-			if (d_num > 1 && (i > -1 || i < d_num))
+			if (d_num > 1 && (i > -1 && i < d_num))
 				ft_putendl("");
 		}
 	}
