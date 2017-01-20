@@ -388,24 +388,27 @@ void findmax(h_dir **current)
 	curr->linksize = 0;
 	while (curr->list[i])
 	{
-		if (ft_strlen(curr->l_count[i]) > curr->linksize && curr->visible[i])
+		if (curr->visible[i])
+		{
+			if (ft_strlen(curr->l_count[i]) > curr->linksize && curr->visible[i])
 			curr->linksize = ft_strlen(curr->l_count[i]);
-		if (ft_strlen(curr->list[i]) > curr->longest && curr->visible[i])
+			if (ft_strlen(curr->list[i]) > curr->longest && curr->visible[i])
 			curr->longest = ft_strlen(curr->list[i]);
-		if (ft_strlen(curr->owner[i]) > curr->ownersize && curr->visible[i])
+			if (ft_strlen(curr->owner[i]) > curr->ownersize && curr->visible[i])
 			curr->ownersize = ft_strlen(curr->owner[i]);
 
-		if (ft_strlen(ft_itoa_base(curr->size[i], 10)) > curr->sizeprint)
+			if (ft_strlen(ft_itoa_base(curr->size[i], 10)) > curr->sizeprint)
 			curr->sizeprint = ft_strlen(ft_itoa_base(curr->size[i], 10));
 
-		if (ft_strlen(ft_itoa_base(curr->block_dev[i], 10)) > curr->sizeprint)
+			if (ft_strlen(ft_itoa_base(curr->block_dev[i], 10)) > curr->sizeprint)
 			curr->sizeprint = ft_strlen(ft_itoa_base(curr->block_dev[i], 10));
 
-		if (ft_strlen(curr->group[i]) > curr->groupsize)
+			if (ft_strlen(curr->group[i]) > curr->groupsize)
 			curr->groupsize = ft_strlen(curr->group[i]);
 
-		if (ft_strlen(ft_itoa_base(curr->block_min[i], 10)) > curr->ran)
+			if (ft_strlen(ft_itoa_base(curr->block_min[i], 10)) > curr->ran)
 			curr->ran = ft_strlen(ft_itoa_base(curr->block_min[i], 10));
+		}
 		i++;
 	}
 }
@@ -929,12 +932,12 @@ void upper_rl(char *str, int first, t_opt *flags)
 	{
 		if (i == 0)
 		{
-		if (first++)
-			ft_printf("\n%s:\n", quickdirchange(str));
-		if (flags->a_op)
-			curr->v_block = 0;
-		if (curr->blocks - curr->v_block > 0)
-		ft_printf("%s%lld\n", "total ",(curr->blocks - curr->v_block));
+			if (first++)
+				ft_printf("\n%s:\n", quickdirchange(str));
+			if (flags->a_op)
+				curr->v_block = 0;
+			if (curr->blocks - curr->v_block > -1)
+				ft_printf("%s%lld\n", "total ",(curr->blocks - curr->v_block));
 		}
 		if (curr->visible[curr->print[i]])
 		{
