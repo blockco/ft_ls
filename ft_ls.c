@@ -217,7 +217,7 @@ int getlnk(struct stat sb_l, h_dir **current, int i)
 	curr->mtim[i] = ft_strdup(ctime(&sb_l.st_mtime));
 	curr->year[i] = getyear(curr->mtim[i]);
 
-	if(sb_l.st_mtime + SIXMONTHS > now)
+	if(sb_l.st_mtime + SIXMONTHS > now && sb_l.st_mtime < now + SIXMONTHS)
 		curr->old[i] = 0;
 	else
 		curr->old[i] = 1;
@@ -907,8 +907,6 @@ void printrest(h_dir *curr, int i)
 	key = ft_strdup("%s%s%s%-13s%-0s");
 	ft_printf(key, makespace(curr->sizeprint - ft_strlen(ft_itoa_base(curr->size[i], 10)), ' '),
 	ft_itoa_base(curr->size[i], 10), " ", settime(curr->mtim[i],curr->old[i], curr->year[i]), curr->list[i]);
-	//if (curr->old[i])
-	//	ft_putendl("\nis old");
 }
 
 void upper_rl(char *str, int first, t_opt *flags)
