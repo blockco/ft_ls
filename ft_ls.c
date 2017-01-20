@@ -713,7 +713,7 @@ void ls_norm(char *str, t_opt *flags, int first)
 	temp = makepath(str, curr->list[curr->print[0]]);
 	temp[ft_strlen(temp) - 2] = '\0';
 	if (first++)
-		ft_printf("%s:\n", temp);
+		ft_printf("%s:\n", str);
 	if (flags->rev_op)
 		revprint(curr);
 	else
