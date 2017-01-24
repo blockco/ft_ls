@@ -489,6 +489,8 @@ char *parseinput(const char **input, t_opt *flags, int argc)
 	while (i < argc && (input[i][0] == '-'))
 	{
 		c = 0;
+		if (ft_strcmp("--", input[i]) == 0)
+			break;
 		while(input[i][c])
 			checkflag(input[i][c++], flags);
 		i++;
@@ -1016,12 +1018,14 @@ char **storedirs(const char **argv, int *count)
 {
 	int i;
 	char **ret;
+	int opend;
 
+	opend = 0;
 	i = 1;
 	*count = 0;
 	while(argv[i])
 	{
-		if (argv[i][0] != '-')
+		if (argv[i][0] != '-' || (argv[i][0] == '-' && !argv[i][1]))
 			*count = *count + 1;
 		i++;
 	}
@@ -1030,7 +1034,15 @@ char **storedirs(const char **argv, int *count)
 	i = 1;
 	while(argv[i])
 	{
-		if (argv[i][0] != '-')
+		if (ft_strcmp("--", argv[i]) == 0)
+		{
+			opend = 1;
+			i++;
+			//continue;
+		}
+		if (!argv[i])
+		break;
+		if ((argv[i][0] != '-') || opend || (argv[i][0] == '-' && !argv[i][1]))
 		{
 			ret[*count] = ft_strdup(argv[i]);
 			*count = *count + 1;
@@ -1115,8 +1127,9 @@ int main(int argc, char const *argv[])
 		dirs[1] = NULL;
 		d_size = 1;
 	}
-	dirs = checkexist(dirs, d_size, curr);
 	int i = 0;
+	dirs = checkexist(dirs, d_size, curr);
+	i = 0;
 	temp = curr->list;
 	curr->msize = arraysize(temp);
 	initial(&curr, temp);
