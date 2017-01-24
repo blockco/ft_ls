@@ -258,6 +258,8 @@ void initial(h_dir **current, char **str)
 			exit(EXIT_FAILURE);
 		}
 		curr->list[i] = ft_strdup(str[i]);
+		// ft_putendl("here");
+		// ft_putendl(curr->list[i]);
 		temp = getlnk(sb_l, &curr, i);
 		block += temp;
 		if (curr->visible[i] == 0)
@@ -1034,7 +1036,7 @@ char **storedirs(const char **argv, int *count)
 	i = 1;
 	while(argv[i])
 	{
-		if (ft_strcmp("--", argv[i]) == 0)
+		if (ft_strcmp("--", argv[i]) == 0 && !opend)
 		{
 			opend = 1;
 			i++;
@@ -1044,6 +1046,8 @@ char **storedirs(const char **argv, int *count)
 		break;
 		if ((argv[i][0] != '-') || opend || (argv[i][0] == '-' && !argv[i][1]))
 		{
+			// ft_putendl("here");
+			// ft_putendl(argv[i]);
 			ret[*count] = ft_strdup(argv[i]);
 			*count = *count + 1;
 		}
@@ -1079,7 +1083,7 @@ char **checkexist(char **dirs, int d_size, h_dir *curr)
 		{
 			if (errno == 20)
 			{
-					temp[b++] = ft_strdup(dirs[i]);
+				temp[b++] = ft_strdup(dirs[i]);
 			}
 			else
 			{
@@ -1131,6 +1135,7 @@ int main(int argc, char const *argv[])
 	dirs = checkexist(dirs, d_size, curr);
 	i = 0;
 	temp = curr->list;
+	i = 0;
 	curr->msize = arraysize(temp);
 	initial(&curr, temp);
 	findmax(&curr);
@@ -1139,6 +1144,7 @@ int main(int argc, char const *argv[])
 	else if (flags->l_op)
 		lex_sort(&curr, name_sort);
 	key = makekey(&curr);
+	i = 0;
 	while (i < curr->msize)
 	{
 		if (flags->l_op)
@@ -1151,13 +1157,15 @@ int main(int argc, char const *argv[])
 				ft_putchar('\n');
 			i++;
 		}
-		else
+		else if (flags->t_op)
 			ft_putendl(curr->list[curr->print[i++]]);
+		else
+			ft_putendl(curr->list[i++]);
 		if (!curr->list[i])
 			break;
 		temp = NULL;
 	}
-	if (temp == NULL)
+	if (temp == NULL && (flags->t_op || flags->rec_op))
 		ft_putendl("");
 	dispatchls(flags, dirs, d_size);
 }
