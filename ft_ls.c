@@ -1047,6 +1047,7 @@ char **storedirs(const char **argv, int *count)
 		if ((argv[i][0] != '-') || opend || (argv[i][0] == '-' && !argv[i][1]))
 		{
 			malloc(0);
+			opend = 1;
 			ret[*count] = ft_strdup(argv[i]);
 			*count = *count + 1;
 		}
