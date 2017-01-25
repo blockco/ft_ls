@@ -249,7 +249,10 @@ void initial(h_dir **current, char **str)
 	mallocstruct(&curr);
 	errno = 0;
 	if (errno == EACCES)
+	{
+		ft_putendl("here");
 		return;
+	}
 	while (str[i] != NULL)
 	{
 		if (-1 == lstat(makepath(".", str[i]), &sb_l))
@@ -1085,10 +1088,12 @@ char **checkexist(char **dirs, int d_size, h_dir *curr)
 			{
 				temp[b++] = ft_strdup(dirs[i]);
 			}
-			else
+			else if (errno > 0)
 			{
+				// ft_printf("%s%s%s", "ls: ", dirs[i], ": Permission denied\n");
+				ft_putstr("ls: ");
+				perror(dirs[i]);
 				found = 1;
-				ft_printf("%s%s%s", "ls: ", dirs[i], ": No such file or directory\n");
 			}
 		}
 		else
