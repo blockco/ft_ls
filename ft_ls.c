@@ -1046,8 +1046,7 @@ char **storedirs(const char **argv, int *count)
 		break;
 		if ((argv[i][0] != '-') || opend || (argv[i][0] == '-' && !argv[i][1]))
 		{
-			// ft_putendl("here");
-			// ft_putendl(argv[i]);
+			malloc(0);
 			ret[*count] = ft_strdup(argv[i]);
 			*count = *count + 1;
 		}
@@ -1103,6 +1102,7 @@ char **checkexist(char **dirs, int d_size, h_dir *curr)
 	ret[a] = NULL;
 	temp[b] = NULL;
 	curr->list = temp;
+	a = 0;
 	return(ret); //fix
 }
 
