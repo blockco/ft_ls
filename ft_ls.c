@@ -584,17 +584,8 @@ char *quickdirchange(char *str)
 	return ret;
 }
 
-void ls_norm(char *str, t_opt *flags, int first)
+void morenorm(h_dir *curr, char *str, t_opt *flags)
 {
-	h_dir *curr;
-	int i;
-	char *key;
-	char *temp;
-	int inc;
-	curr = malloc(sizeof(h_dir));
-	curr->msize = findmsize(str);
-	if (curr->msize == 0)
-		return;
 	initstruct(curr, str, 0);
 	findmax(curr);
 	if (flags->t_op)
@@ -602,29 +593,55 @@ void ls_norm(char *str, t_opt *flags, int first)
 	else
 		lex_sort(&curr, name_sort);
 	handle_op(curr ,flags);
-	key = normkey(curr);
-	temp = makepath(str, curr->list[curr->print[0]]);
-	temp[ft_strlen(temp) - 2] = '\0';
+}
+
+int morestuff(int first, char *str, t_opt *flags, h_dir *curr)
+{
 	if (first++)
 		ft_printf("%s:\n", str);
 	if (flags->rev_op)
 		revprint(curr);
 	else
 		normprint(curr);
+	return (first);
+}
+
+int checkifnorm(h_dir *curr, int i)
+{
+	if (curr->list[curr->print[i]] && curr->visible[curr->print[i]]
+		&&curr->isdir[curr->print[i]]
+		&& checkinf(curr->list[curr->print[i]]) &&
+		!curr->islnk[curr->print[i]])
+		return (1);
+	return 0;
+}
+
+void ls_norm(char *str, t_opt *flags, int first)
+{
+	h_dir *curr;
+	int i;
+	char *key;
+	char *temp;
+	int inc;
+
+	inc = -1;
+	i = 0;
+	curr = malloc(sizeof(h_dir));
+	curr->msize = findmsize(str);
+	if (curr->msize == 0)
+		return;
+	morenorm(curr, str, flags);
+	key = normkey(curr);
+	temp = makepath(str, curr->list[curr->print[0]]);
+	temp[ft_strlen(temp) - 2] = '\0';
+	first = morestuff(first, str, flags, curr);
 	if (flags->rev_op)
-	{
 		i = curr->msize - 1;
-		inc = -1;
-	}
 	else
-	{
-		i = 0;
 		inc = 1;
-	}
 	while(i > -1 && i < curr->msize && flags->rec_op)
 	{
-		if(curr->list[curr->print[i]] && curr->visible[curr->print[i]] &&curr->isdir[curr->print[i]]
-			&& checkinf(curr->list[curr->print[i]]) && !curr->islnk[curr->print[i]])
+		if(checkifnorm(curr, i))
 		{
 			if (first > 0)
 				ft_printf("\n");
@@ -633,63 +650,6 @@ void ls_norm(char *str, t_opt *flags, int first)
 	i = i + inc;
 	}
 }
-
-
-
-// void normprint_l(h_dir *curr, char *str)
-// {
-// 	int i;
-//
-// 	i = 0;
-// 	while(i < curr->msize)
-// 	{
-// 		if (curr->visible[curr->print[i]])
-// 		{
-// 			ft_printf(makekey(&curr), curr->permd[curr->print[i]], curr->l_count[curr->print[i]] ,curr->owner[curr->print[i]], curr->group[curr->print[i]],
-// 			ft_itoa_base(curr->size[curr->print[i]], 10), settime(curr->mtim[curr->print[i]]), curr->list[curr->print[i]]);
-// 			if (curr->islnk[curr->print[i]])
-// 				ft_printf("%s%s", " -> ", printlnk(makepath(str, curr->list[curr->print[i]])));
-// 			if (curr->visible[curr->print[i]])
-// 				ft_putchar('\n');
-// 		}
-// 		i++;
-// 	}
-// }
-
-// void lsdiff(char *str, t_opt *flags, int first)
-// {
-// 	h_dir *curr;
-// 	int i;
-// 	char *temp;
-//
-// 	curr = malloc(sizeof(h_dir));
-// 	curr->msize = findmsize(str);
-// 	initstruct(&curr, str);
-// 	findmax(&curr);
-// 	if (flags->t_op)
-// 		lex_sort(&curr, time_sort);
-// 	else
-// 		lex_sort(&curr, name_sort);
-// 	handle_op(curr ,flags);
-// 	temp = makepath(str, curr->list[curr->print[0]]);
-// 	temp[ft_strlen(temp) - 1] = '\0';
-// 	if (first++)
-// 		ft_printf("\n%s:\n", temp);
-// 	if (flags->rev_op)
-// 		revprint_l(curr, str);
-// 	else
-// 		normprint_l(curr, str);
-// 	i = 0;
-// 	while(i < curr->msize && flags->rec_op)
-// 	{
-// 		if(curr->list[curr->print[i]] && curr->visible[curr->print[i]] &&curr->isdir[curr->print[i]]
-// 			&& checkinf(curr->list[curr->print[i]]) && !curr->islnk[curr->print[i]])
-// 		{
-// 			lsdiff(makepath(str, curr->list[curr->print[i]]), flags, first);
-// 		}
-// 	i++;
-// 	}
-// }
 
 void makerev(h_dir *curr)
 {
