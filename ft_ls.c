@@ -249,15 +249,13 @@ void initial(h_dir **current, char **str)
 	mallocstruct(&curr);
 	errno = 0;
 	if (errno == EACCES)
-	{
-		ft_putendl("here");
 		return;
-	}
 	while (str[i] != NULL)
 	{
 		if (-1 == lstat(makepath(".", str[i]), &sb_l))
 		{
-			perror("name overload");
+			ft_putstr("ls: ");
+			perror(str[i]);
 			exit(EXIT_FAILURE);
 		}
 		curr->list[i] = ft_strdup(str[i]);
@@ -458,6 +456,17 @@ void initflag(t_opt *flags)
 	flags->t_op = 0;
 }
 
+void noz(char c)
+{
+	char *str;
+	str = malloc(2);
+	str[0] = c;
+	str[1] = '\0';
+	ft_printf("ls: illegal option -- %c\n", c);
+	ft_putendl("usage: ls [-ABCFGHLOPRSTUWabcdefghiklmnopqrstuwx1] [file ...]");
+	exit(1);
+}
+
 void checkflag(char c, t_opt *flags)
 {
 	if (c == 'l')
@@ -470,6 +479,8 @@ void checkflag(char c, t_opt *flags)
 		flags->rev_op = 1;
 	else if (c == 't')
 		flags->t_op = 1;
+	else if (c == 'Z' || c == 'z' || c == '-')
+		noz(c);
 }
 
 void printflags(t_opt *flags)
@@ -496,8 +507,15 @@ char *parseinput(const char **input, t_opt *flags, int argc)
 		c = 0;
 		if (ft_strcmp("--", input[i]) == 0)
 			break;
-		while(input[i][c])
-			checkflag(input[i][c++], flags);
+		if (input[i][c] == '-' && (input[i][c + 1]))
+		{
+			while(input[i][c])
+			{
+				if (input[i][c] == '-')
+					c++;
+				checkflag(input[i][c++], flags);
+			}
+		}
 		i++;
 	}
 	return str;
@@ -966,6 +984,8 @@ void upper_rl(char *str, int first, t_opt *flags)
 		}
 	i++;
 	}
+	free(key);
+	free(curr);
 }
 
 int arraysize(char** ret)
@@ -1060,7 +1080,7 @@ char **storedirs(const char **argv, int *count)
 	return ret;
 }
 
-char **checkexist(char **dirs, int d_size, h_dir *curr)
+char **checkexist(char **dirs, int d_size, h_dir *curr, t_opt *flags)
 {
 	char **ret;
 	DIR *dir;
@@ -1084,7 +1104,7 @@ char **checkexist(char **dirs, int d_size, h_dir *curr)
 		dir = opendir (dirs[i]);
 		if (!dir)
 		{
-			if (errno == 20)
+			if (errno == 20 || (errno == 2 && !flags->rec_op))
 			{
 				temp[b++] = ft_strdup(dirs[i]);
 			}
@@ -1099,7 +1119,8 @@ char **checkexist(char **dirs, int d_size, h_dir *curr)
 		else
 		{
 			ret[a++] = ft_strdup(dirs[i]);
-			closedir(dir);
+			if (errno != 2)
+				closedir(dir);
 		}
 		i++;
 	}
@@ -1120,6 +1141,7 @@ int main(int argc, char const *argv[])
 	int d_size;
 	h_dir *curr;
 	char *key;
+	int inc;
 
 	curr = malloc(sizeof(h_dir));
 	d_size = 0;
@@ -1138,7 +1160,7 @@ int main(int argc, char const *argv[])
 		d_size = 1;
 	}
 	int i = 0;
-	dirs = checkexist(dirs, d_size, curr);
+	dirs = checkexist(dirs, d_size, curr, flags);
 	i = 0;
 	temp = curr->list;
 	i = 0;
@@ -1147,10 +1169,20 @@ int main(int argc, char const *argv[])
 	findmax(&curr);
 	if (flags->t_op)
 		lex_sort(&curr, time_sort);
-	else if (flags->l_op)
+	else
 		lex_sort(&curr, name_sort);
 	key = makekey(&curr);
 	i = 0;
+	if (flags->rev_op && (!flags->rec_op && curr->msize > 0))
+	{
+		i = curr->msize - 1;
+		inc = -1;
+	}
+	else
+	{
+		i = 0;
+		inc = 1;
+	}
 	while (i < curr->msize)
 	{
 		if (flags->l_op)
@@ -1161,17 +1193,22 @@ int main(int argc, char const *argv[])
 				ft_printf("%s%s\n", " -> ", printlnk(makepath(".", curr->list[curr->print[i]])));
 			else
 				ft_putchar('\n');
-			i++;
 		}
 		else if (flags->t_op)
-			ft_putendl(curr->list[curr->print[i++]]);
+			ft_putendl(curr->list[curr->print[i]]);
 		else
-			ft_putendl(curr->list[i++]);
+			ft_putendl(curr->list[curr->print[i]]);
+		i = i + inc;
 		if (!curr->list[i])
 			break;
 		temp = NULL;
 	}
-	if (temp == NULL && (flags->t_op || flags->rec_op))
+	if (temp == NULL && (flags->t_op || flags->rec_op) && (d_size > 0 && curr->msize > 1))
 		ft_putendl("");
 	dispatchls(flags, dirs, d_size);
+	free (flags);
+	free(dirs);
+	free(temp);
+	free (curr);
+	free(key);
 }
