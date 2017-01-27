@@ -29,7 +29,7 @@ typedef	struct	h_dir
 	size_t linksize;
 	//
 	char **l_count;
- 
+
 	char **owner;
 	char **list;
 	int *isdir;
@@ -101,7 +101,7 @@ char* permstr(char *perm, int isdir, int isdev, int islnk);
 int getlnk(struct stat sb_l, h_dir **current, int i);
 
 //intits struct overall
-void initstruct(h_dir **current, char *str);
+void initstruct(h_dir *curr, char *str, int i);
 
 //makes sure it isnt root or current directory
 int checkinf(char *str);
@@ -110,7 +110,7 @@ int checkinf(char *str);
 char	**dup_strarray(h_dir **current, char **list);
 
 //find max for printing
-void findmax(h_dir **current);
+void findmax(h_dir *current);
 
 //fixes time for formating (NOT WORKING)
 void timefix(char *time_s);
@@ -126,5 +126,9 @@ void upper_rl(char *str, int first, t_opt *flags);
 
 //makes path to make Recursive call or print directory
 char* makepath(char *curdir, char *file);
+
+void morels_norm(t_opt *flags, h_dir *curr, char *str, int first);
+
+void ls_norm(char *str, t_opt *flags, int first);
 
 #endif
