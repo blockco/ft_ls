@@ -1,6 +1,6 @@
 #include "ft_ls.h"
 
-int time_sort(struct s_dir **current, int pos1, int pos2)
+int		time_sort(struct s_dir **current, int pos1, int pos2)
 {
 	struct s_dir	*curr;
 
@@ -16,30 +16,30 @@ int time_sort(struct s_dir **current, int pos1, int pos2)
 		return (curr->time_v[pos1] - curr->time_v[pos2] < 0);
 }
 
-void	findmax(struct s_dir *curr)
+void	findmax(struct s_dir *c)
 {
 	int	i;
 
 	i = 0;
-	curr->linksize = 0;
-	while (curr->list[i])
+	c->linksize = 0;
+	while (c->list[i])
 	{
-		if (curr->visible[i])
+		if (c->visible[i])
 		{
-			if (ft_strlen(curr->l_count[i]) > curr->linksize && curr->visible[i])
-				curr->linksize = ft_strlen(curr->l_count[i]);
-			if (ft_strlen(curr->list[i]) > curr->longest && curr->visible[i])
-				curr->longest = ft_strlen(curr->list[i]);
-			if (ft_strlen(curr->owner[i]) > curr->ownersize && curr->visible[i])
-				curr->ownersize = ft_strlen(curr->owner[i]);
-			if (ft_strlen(ft_itoa_base(curr->size[i], 10)) > curr->sizeprint)
-				curr->sizeprint = ft_strlen(ft_itoa_base(curr->size[i], 10));
-			if (ft_strlen(ft_itoa_base(curr->block_dev[i], 10)) > curr->sizeprint)
-				curr->sizeprint = ft_strlen(ft_itoa_base(curr->block_dev[i], 10));
-			if (ft_strlen(curr->group[i]) > curr->groupsize)
-				curr->groupsize = ft_strlen(curr->group[i]);
-			if (ft_strlen(ft_itoa_base(curr->block_min[i], 10)) > curr->ran)
-				curr->ran = ft_strlen(ft_itoa_base(curr->block_min[i], 10));
+			if (ft_strlen(c->l_count[i]) > c->linksize && c->visible[i])
+				c->linksize = ft_strlen(c->l_count[i]);
+			if (ft_strlen(c->list[i]) > c->longest && c->visible[i])
+				c->longest = ft_strlen(c->list[i]);
+			if (ft_strlen(c->owner[i]) > c->ownersize && c->visible[i])
+				c->ownersize = ft_strlen(c->owner[i]);
+			if (ft_strlen(ft_itoa_base(c->size[i], 10)) > c->sizeprint)
+				c->sizeprint = ft_strlen(ft_itoa_base(c->size[i], 10));
+			if (ft_strlen(ft_itoa_base(c->block_dev[i], 10)) > c->sizeprint)
+				c->sizeprint = ft_strlen(ft_itoa_base(c->block_dev[i], 10));
+			if (ft_strlen(c->group[i]) > c->groupsize)
+				c->groupsize = ft_strlen(c->group[i]);
+			if (ft_strlen(ft_itoa_base(c->block_min[i], 10)) > c->ran)
+				c->ran = ft_strlen(ft_itoa_base(c->block_min[i], 10));
 		}
 		i++;
 	}
@@ -48,7 +48,7 @@ void	findmax(struct s_dir *curr)
 char	*printlnk(char *str)
 {
 	struct stat sb;
-	char *linkname;
+	char		*linkname;
 
 	if (lstat(str, &sb) == -1)
 	{
@@ -57,12 +57,12 @@ char	*printlnk(char *str)
 	}
 	linkname = ft_strnew(sb.st_size);
 	readlink(str, linkname, sb.st_size + 1);
-	return(linkname);
+	return (linkname);
 }
 
 char	*makekey(struct s_dir **current)
 {
-	char	*key;
+	char			*key;
 	struct s_dir	*curr;
 
 	curr = *current;

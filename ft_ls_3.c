@@ -30,10 +30,10 @@ void	mallocstruct(struct s_dir **current)
 char	*intit_perm(int isdir, int islnk)
 {
 	if (isdir)
-		return(ft_strdup("d"));
+		return (ft_strdup("d"));
 	else if (islnk)
-		return(ft_strdup("l"));
-	return(ft_strdup("-"));
+		return (ft_strdup("l"));
+	return (ft_strdup("-"));
 }
 
 char	*findperm(char c)
@@ -68,7 +68,7 @@ char	*permstr(char *perm, int isdir, int isdev, int islnk)
 	ret = intit_perm(isdir, islnk);
 	while (perm[i])
 	{
-		ret = betterjoin(ret,findperm(perm[i]));
+		ret = betterjoin(ret, findperm(perm[i]));
 		i++;
 	}
 	if (isdev)
@@ -81,5 +81,5 @@ char	*makepath(char *curdir, char *file)
 	char	*temp;
 
 	temp = betterjoin(curdir, "/");
-	return(betterjoin(temp, file));
+	return (betterjoin(temp, file));
 }

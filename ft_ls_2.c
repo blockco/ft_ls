@@ -20,7 +20,7 @@ char	*denyname(char *str)
 	i = 2;
 	a = 0;
 	ret = malloc(ft_strlen(str) - 1);
-	while(str[i])
+	while (str[i])
 	{
 		ret[a] = str[i];
 		i++;
@@ -32,21 +32,22 @@ char	*denyname(char *str)
 
 int		findmsize(char *str)
 {
-	int		msize;
-	DIR		*dir;
-	struct	dirent *dp;
+	int				msize;
+	DIR				*dir;
+	struct dirent	*dp;
 
 	msize = 0;
 	errno = 0;
-	dir = opendir (str);
+	dir = opendir(str);
 	if (errno == EACCES)
 	{
-		ft_printf("%s:\n%s%s%s\n", str, "ls: " , denyname(str) , ": Permission denied");
-		return(0);
+		ft_printf("%s:\n%s%s%s\n", str, "ls: ", denyname(str),
+		": Permission denied");
+		return (0);
 	}
 	if (dir)
 	{
-		while ((dp = readdir (dir)) != NULL)
+		while ((dp = readdir(dir)) != NULL)
 			msize++;
 		closedir(dir);
 	}

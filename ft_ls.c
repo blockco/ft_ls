@@ -1,5 +1,12 @@
 #include "ft_ls.h"
 
+void exitf(char **str, int i)
+{
+	ft_putstr("ls: ");
+	perror(str[i]);
+	exit(EXIT_FAILURE);
+}
+
 void	flagfix(int argc, const char **argv, struct s_opt *flags)
 {
 	if (argc > 1)
@@ -15,26 +22,22 @@ void	endl(struct s_opt *flags, int d_size, struct s_dir *curr)
 int		main(int argc, char const *argv[])
 {
 	struct s_opt *flags;
-	char **dirs;
-	int d_size;
+	struct s_mor var;
 	struct s_dir *curr;
-	char *key;
-	int inc;
-	int i;
 
-	dirs = NULL;
+	var.dirs = NULL;
 	curr = malloc(sizeof(struct s_dir));
 	flags = malloc(sizeof(struct s_opt));
-	initflag(flags, &i, &d_size);
-	dirs = finishmain(argc, dirs, &d_size, argv);
+	initflag(flags, &var.i, &var.d_size);
+	var.dirs = finishmain(argc, var.dirs, &var.d_size, argv);
 	flagfix(argc, argv, flags);
-	if (d_size == 0)
-		dirs = fixdir(dirs, &d_size);
-	dirs = checkexist(dirs, d_size, curr, flags);
-	key = fixmain(curr, flags);
-	mainops(flags, curr, &i, &inc);
-	mainprint(flags, key, i, curr);
-	endl(flags, d_size, curr);
-	dispatchls(flags, dirs, d_size);
-	freestuff(flags, dirs, key);
+	if (var.d_size == 0)
+		var.dirs = fixdir(var.dirs, &var.d_size);
+	var.dirs = checkexist(var.dirs, var.d_size, curr, flags);
+	var.key = fixmain(curr, flags);
+	mainops(flags, curr, &var.i, &var.inc);
+	mainprint(flags, var.key, var.i, curr);
+	endl(flags, var.d_size, curr);
+	dispatchls(flags, var.dirs, var.d_size);
+	freestuff(flags, var.dirs, var.key);
 }

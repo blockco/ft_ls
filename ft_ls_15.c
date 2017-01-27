@@ -19,33 +19,29 @@ void	lastexist(struct s_dir *curr, int d_size, char **ret)
 	curr->list = (char**)malloc(sizeof(char*) * d_size + 1);
 	ret[d_size] = NULL;
 }
-char	**checkexist(char **dirs, int d_size, struct s_dir *curr, struct s_opt *flags)
-{
-	char	**ret;
-	DIR		*dir;
-	int		i;
-	int		a;
-	int		b;
-	int		found;
 
-	setthem(&a, &i, &b, &found);
-	ret = (char**)malloc(sizeof(char*) * d_size + 1);
-	lastexist(curr, d_size, ret);
-	while (i < d_size)
+char	**checkexist(char **dirs, int d_size, struct s_dir *c, struct s_opt *f)
+{
+	struct s_emor var;
+
+	setthem(&var.a, &var.i, &var.b, &var.found);
+	var.ret = (char**)malloc(sizeof(char*) * d_size + 1);
+	lastexist(c, d_size, var.ret);
+	while (var.i < d_size)
 	{
-		if (NULL == (dir = opendir (dirs[i])))
+		if (NULL == (var.dir = opendir(dirs[var.i])))
 		{
-			if (errno == 20 || (errno == 2 && !flags->rec_op))
-				curr->list[b++] = ft_strdup(dirs[i]);
+			if (errno == 20 || (errno == 2 && !f->rec_op))
+				c->list[var.b++] = ft_strdup(dirs[var.i]);
 			else if (errno > 0)
-				found = founddir(dirs, found, i);
+				var.found = founddir(dirs, var.found, var.i);
 		}
 		else
-			ret[a++] = ft_strdup(dirs[i]);
-		i = seti(i, dirs, dir);
+			var.ret[var.a++] = ft_strdup(dirs[var.i]);
+		var.i = seti(var.i, dirs, var.dir);
 	}
-	makenull(a, b, ret, curr->list);
-	return(ret);
+	makenull(var.a, var.b, var.ret, c->list);
+	return (var.ret);
 }
 
 void	mainops(struct s_opt *flags, struct s_dir *curr, int *i, int *inc)

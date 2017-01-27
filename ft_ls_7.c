@@ -30,12 +30,14 @@ void	checkflag(char c, struct s_opt *flags)
 
 void	printflags(struct s_opt *flags)
 {
-	ft_printf("%d\n%d\n%d\n%d\n%d\n%d\n", flags->l_op,flags->reg_ls,flags->rec_op,flags->a_op,flags->rev_op,flags->t_op);
+	ft_printf("%d\n%d\n%d\n%d\n%d\n%d\n", flags->l_op, flags->reg_ls,
+	flags->rec_op, flags->a_op, flags->rev_op,
+	flags->t_op);
 }
 
 int		moreparse(int i, int c, const char **input, struct s_opt *flags)
 {
-	while(input[i][c])
+	while (input[i][c])
 	{
 		if (input[i][c] == '-')
 			c++;
@@ -62,7 +64,7 @@ char	*parseinput(const char **input, struct s_opt *flags, int argc)
 	{
 		c = 0;
 		if (ft_strcmp("--", input[i]) == 0)
-			break;
+			break ;
 		if (input[i][c] == '-' && (input[i][c + 1]))
 			c = moreparse(i, c, input, flags);
 		i++;

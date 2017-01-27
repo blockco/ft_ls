@@ -20,8 +20,8 @@ void	moredirfree(struct s_dir *curr)
 	free(curr->block_min);
 	free(curr->print);
 	free(curr->islnk);
-	//free(curr);
 }
+
 void	freedir(struct s_dir *curr)
 {
 	free(curr->savetime);
@@ -51,13 +51,13 @@ void	freedir(struct s_dir *curr)
 
 void	freestuff(struct s_opt *flags, char **dirs, char *key)
 {
-	free (flags);
-	freedub (dirs);
-	free (key);
+	free(flags);
+	freedub(dirs);
+	free(key);
 }
 
 void	freestuffagain(struct s_opt *flags, char *key)
 {
-	free (flags);
-	free (key);
+	free(flags);
+	free(key);
 }

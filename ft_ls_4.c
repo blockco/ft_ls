@@ -36,9 +36,10 @@ void	morelink(struct stat sb_l, struct s_dir *curr, int i)
 	curr->time_v[i] = sb_l.st_mtime;
 	curr->ctim_s[i] = (long long)sb_l.st_ctimespec.tv_sec;
 	curr->ctim_n[i] = (long)sb_l.st_ctimespec.tv_nsec;
-	curr->permd[i] = ft_strdup(permstr(ft_itoa_base(sb_l.st_mode, 8), curr->isdir[i], curr->isblock[i], curr->islnk[i]));
+	curr->permd[i] = ft_strdup(permstr(ft_itoa_base(sb_l.st_mode, 8),
+	curr->isdir[i], curr->isblock[i], curr->islnk[i]));
 	curr->l_count[i] = ft_itoa_base(sb_l.st_nlink, 10);
-	if(sb_l.st_mtime + SIXMONTHS > now && sb_l.st_mtime < now + SIXMONTHS)
+	if (sb_l.st_mtime + SIXMONTHS > now && sb_l.st_mtime < now + SIXMONTHS)
 		curr->old[i] = 0;
 	else
 		curr->old[i] = 1;
@@ -61,42 +62,42 @@ void	evenmorelnk(struct stat sb_l, struct s_dir *curr, int i)
 	morelink(sb_l, curr, i);
 }
 
-int		getlnk(struct stat sb_l, struct s_dir **current, int i)
+int		getlnk(struct stat sb, struct s_dir **current, int i)
 {
 	struct passwd	*pwuser;
 	struct group	*grpnam;
-	struct s_dir			*curr;
+	struct s_dir	*curr;
 
 	curr = *current;
-	if (NULL == (pwuser = getpwuid(sb_l.st_uid)))
+	if (NULL == (pwuser = getpwuid(sb.st_uid)))
 	{
-	   perror("getpwuid()");
-	   exit(EXIT_FAILURE);
+		perror("getpwuid()");
+		exit(EXIT_FAILURE);
 	}
-	if (NULL == (grpnam = getgrgid(sb_l.st_gid)))
+	if (NULL == (grpnam = getgrgid(sb.st_gid)))
 	{
 		perror("getgrgid()");
 		exit(EXIT_FAILURE);
 	}
-	if ((sb_l.st_mode & S_IFMT) == S_IFBLK || (sb_l.st_mode & S_IFMT) == S_IFCHR)
+	if ((sb.st_mode & S_IFMT) == S_IFBLK || (sb.st_mode & S_IFMT) == S_IFCHR)
 	{
 		curr->isblock[i] = 1;
-		curr->block_min[i] = minor(sb_l.st_rdev);
+		curr->block_min[i] = minor(sb.st_rdev);
 		curr->hasblock = 1;
 	}
-	evenmorelnk(sb_l, curr, i);
+	evenmorelnk(sb, curr, i);
 	curr->owner[i] = ft_strdup(pwuser->pw_name);
 	curr->group[i] = ft_strdup(grpnam->gr_name);
-	return(sb_l.st_blocks);
+	return (sb.st_blocks);
 }
 
 void	initial(struct s_dir **current, char **str)
 {
-	int			temp;
-	int 		i;
-	struct stat	sb_l;
-	struct s_dir		*curr;
-	long long	block;
+	int				temp;
+	int				i;
+	struct stat		sb_l;
+	struct s_dir	*curr;
+	long long		block;
 
 	block = 0;
 	i = 0;
@@ -104,22 +105,16 @@ void	initial(struct s_dir **current, char **str)
 	mallocstruct(&curr);
 	errno = 0;
 	if (errno == EACCES)
-		return;
+		return ;
 	while (str[i] != NULL)
 	{
 		if (-1 == lstat(makepath(".", str[i]), &sb_l))
-		{
-			ft_putstr("ls: ");
-			perror(str[i]);
-			exit(EXIT_FAILURE);
-		}
+			exitf(str, i);
 		curr->list[i] = ft_strdup(str[i]);
 		temp = getlnk(sb_l, &curr, i);
 		block += temp;
 		if (curr->visible[i] == 0)
-		{
 			curr->v_block += temp;
-		}
 		i++;
 	}
 	curr->blocks = block;

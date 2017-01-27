@@ -33,7 +33,7 @@ void	revprint(struct s_dir *curr)
 
 	temp = curr->msize;
 	temp--;
-	while(temp > -1)
+	while (temp > -1)
 	{
 		if (curr->visible[curr->print[temp]])
 			ft_printf("%s\n", curr->list[curr->print[temp]]);
@@ -46,7 +46,7 @@ void	normprint(struct s_dir *curr)
 	int i;
 
 	i = 0;
-	while(i < curr->msize)
+	while (i < curr->msize)
 	{
 		if (curr->visible[curr->print[i]])
 			ft_printf("%s\n", curr->list[curr->print[i]]);

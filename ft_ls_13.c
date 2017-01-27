@@ -52,9 +52,9 @@ void	dispatchls(struct s_opt *flags, char **dir, int d_num)
 
 int		shelp(const char **argv, int count, char **ret, int i)
 {
-		ret[count] = ft_strdup(argv[i]);
-		count = count + 1;
-		return count;
+	ret[count] = ft_strdup(argv[i]);
+	count = count + 1;
+	return (count);
 }
 
 int		retit(const char **argv, int i, int *count)

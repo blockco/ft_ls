@@ -2,7 +2,8 @@
 
 int		uppertest(struct s_dir *curr, int i)
 {
-	if (curr->list[curr->print[i]] && curr->visible[curr->print[i]]&& curr->isdir[curr->print[i]]
+	if (curr->list[curr->print[i]] && curr->visible[curr->print[i]]
+		&& curr->isdir[curr->print[i]]
 		&& checkinf(curr->list[curr->print[i]]) && !curr->islnk[curr->print[i]])
 		return (1);
 	return (0);
@@ -19,17 +20,18 @@ void	structstuff(struct s_dir *curr, char *str, struct s_opt *flags)
 	handle_op_l(curr, flags);
 	findmax(curr);
 }
+
 void	upper_rl(char *str, int first, struct s_opt *flags)
 {
 	struct s_dir	*curr;
-	int		i;
-	char	*key;
+	int				i;
+	char			*key;
 
 	curr = malloc(sizeof(struct s_dir));
 	structstuff(curr, str, flags);
 	key = makekey(&curr);
 	i = 0;
-	while(i < curr->msize)
+	while (i < curr->msize)
 	{
 		if (i == 0)
 			first = moreupperl(first, str, curr, flags);
@@ -38,15 +40,15 @@ void	upper_rl(char *str, int first, struct s_opt *flags)
 		i++;
 	}
 	i = 0;
-	while(i < curr->msize && flags->rec_op)
+	while (i < curr->msize && flags->rec_op)
 	{
-		if(uppertest(curr, i))
+		if (uppertest(curr, i))
 			upper_rl(makepath(str, curr->list[curr->print[i]]), first, flags);
-	i++;
+		i++;
 	}
 }
 
-int		arraysize(char** ret)
+int		arraysize(char **ret)
 {
 	int	i;
 

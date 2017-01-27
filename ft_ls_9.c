@@ -5,7 +5,7 @@ char	*quickdirchange(char *str)
 	char	*ret;
 
 	ret = ft_strdup(str);
-	return ret;
+	return (ret);
 }
 
 void	morenorm(struct s_dir *curr, char *str, struct s_opt *flags)
@@ -16,7 +16,7 @@ void	morenorm(struct s_dir *curr, char *str, struct s_opt *flags)
 		lex_sort(&curr, time_sort);
 	else
 		lex_sort(&curr, name_sort);
-	handle_op(curr ,flags);
+	handle_op(curr, flags);
 }
 
 int		morestuff(int first, char *str, struct s_opt *flags, struct s_dir *curr)
@@ -33,11 +33,11 @@ int		morestuff(int first, char *str, struct s_opt *flags, struct s_dir *curr)
 int		checkifnorm(struct s_dir *curr, int i)
 {
 	if (curr->list[curr->print[i]] && curr->visible[curr->print[i]]
-		&&curr->isdir[curr->print[i]]
+		&& curr->isdir[curr->print[i]]
 		&& checkinf(curr->list[curr->print[i]]) &&
 		!curr->islnk[curr->print[i]])
 		return (1);
-	return 0;
+	return (0);
 }
 
 void	dosome(int first)

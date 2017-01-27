@@ -3,7 +3,7 @@
 void	initstruct(struct s_dir *curr, char *str, int i)
 {
 	DIR				*dir;
-	int 			temp;
+	int				temp;
 	struct dirent	*dp;
 	struct stat		sb_l;
 
@@ -12,8 +12,8 @@ void	initstruct(struct s_dir *curr, char *str, int i)
 	errno = 0;
 	dir = opendir(str);
 	if (errno == EACCES)
-		return;
-	while ((dp = readdir (dir)) != NULL)
+		return ;
+	while ((dp = readdir(dir)) != NULL)
 	{
 		if (-1 == lstat(makepath(str, dp->d_name), &sb_l))
 		{
@@ -31,11 +31,10 @@ void	initstruct(struct s_dir *curr, char *str, int i)
 
 int		checkinf(char *str)
 {
-	if ((ft_strcmp(str,".") == 0 ) || (ft_strcmp(str,"..") == 0) )
+	if ((ft_strcmp(str, ".") == 0) || (ft_strcmp(str, "..") == 0))
 		return (0);
-	return(1);
+	return (1);
 }
-
 
 char	**dup_strarray(struct s_dir **current, char **list)
 {
@@ -57,13 +56,14 @@ int		name_sort(struct s_dir **current, int pos1, int pos2)
 	return (ft_strcmp(curr->list[pos1], curr->list[pos2]) > 0);
 }
 
-void lex_sort(struct s_dir **current, int (*sort_func)(struct s_dir **, int, int))
+void	lex_sort(struct s_dir **current,
+	int (*sort_func)(struct s_dir **, int, int))
 {
-	int		iterator;
+	int				iterator;
 	struct s_dir	*curr;
-	int		min;
-	int		pos_in_list;
-	int		*found;
+	int				min;
+	int				pos_in_list;
+	int				*found;
 
 	curr = *current;
 	iterator = -1;

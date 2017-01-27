@@ -3,9 +3,9 @@
 int		checkinc(struct s_opt *flags, struct s_dir *curr)
 {
 	if (flags->rev_op && (!flags->rec_op && curr->msize > 0))
-		return(-1);
+		return (-1);
 	else
-		return(1);
+		return (1);
 }
 
 void	mainprint(struct s_opt *flags, char *key, int i, struct s_dir *curr)
@@ -33,7 +33,7 @@ void	mainprint(struct s_opt *flags, char *key, int i, struct s_dir *curr)
 			ft_putendl(curr->list[curr->print[i]]);
 		i = i + inc;
 		if (!curr->list[i])
-			break;
+			break ;
 	}
 }
 
@@ -49,7 +49,7 @@ char	*fixmain(struct s_dir *curr, struct s_opt *flags)
 		lex_sort(&curr, time_sort);
 	else
 		lex_sort(&curr, name_sort);
-	return(makekey(&curr));
+	return (makekey(&curr));
 }
 
 char	**fixdir(char **dirs, int *d_size)

@@ -11,16 +11,16 @@ void	moresome(int *i, int *inc, struct s_opt *flags, struct s_dir *curr)
 void	ls_norm(char *str, struct s_opt *flags, int first)
 {
 	struct s_dir	*curr;
-	int		i;
-	char	*temp;
-	int		inc;
+	int				i;
+	char			*temp;
+	int				inc;
 
 	inc = -1;
 	i = 0;
 	curr = malloc(sizeof(struct s_dir));
 	curr->msize = findmsize(str);
 	if (curr->msize == 0)
-		return;
+		return ;
 	morenorm(curr, str, flags);
 	temp = makepath(str, curr->list[curr->print[0]]);
 	temp[ft_strlen(temp) - 2] = '\0';
@@ -33,7 +33,7 @@ void	ls_norm(char *str, struct s_opt *flags, int first)
 			dosome(first);
 			ls_norm(makepath(str, curr->list[curr->print[i]]), flags, first);
 		}
-	i = i + inc;
+		i = i + inc;
 	}
 }
 
@@ -70,7 +70,7 @@ char	*yearswitch(char *str, char *year)
 	char	*ret;
 	char	*c;
 
-	c = ft_strchr(year,'\n');
+	c = ft_strchr(year, '\n');
 	c[0] = 0;
 	ret = ft_strnew(7);
 	i = 0;
@@ -79,7 +79,6 @@ char	*yearswitch(char *str, char *year)
 		ret[i] = str[i];
 		i++;
 	}
-	ret = betterjoin(ret," ");
-	return(betterjoin(ret, year));
-
+	ret = betterjoin(ret, " ");
+	return (betterjoin(ret, year));
 }
