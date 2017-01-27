@@ -26,6 +26,10 @@ OBJS =	$(SRCS:.c=.o)
 
 COMP =	make -C $(FT_PRINTF) re
 
+CLEAN =	make -C $(FT_PRINTF) clean
+
+CLEANF = make -C $(FT_PRINTF) fclean
+
 FT_PRINTF = ft_printf/
 
 all: 	$(CC)
@@ -36,10 +40,12 @@ $(CC):
 		@$(CC) $(FLAG) $(SRCS) -o ft_ls
 
 clean:
+		@$(CLEAN)
 		@/bin/rm -f $(OBJS) ft_ls
 
 fclean:	clean
 		@/bin/rm -f ft_ls
+		@$(CLEANF)
 
 re: fclean all
 
