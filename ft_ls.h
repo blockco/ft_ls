@@ -55,7 +55,6 @@ typedef	struct	h_dir
 
 	char **permd;
 	char **group;
-	//imp1
 	int *visible;
 
 	int *isblock;

@@ -1,6 +1,68 @@
 
 #include "ft_ls.h"
 
+void freedub(char **data)
+{
+	int i;
+
+	i = 0;
+	while (data[i])
+	{
+		free(data[i]);
+		i++;
+	}
+	free(data);
+}
+
+void moredirfree(h_dir *curr)
+{
+	free(curr->isblock);
+	free(curr->block_dev);
+	free(curr->block_min);
+	free(curr->print);
+	free(curr->islnk);
+	//free(curr);
+}
+void freedir(h_dir *curr)
+{
+	free(curr->savetime);
+	free(curr->old);
+	freedub(curr->year);
+	freedub(curr->l_count);
+	freedub(curr->owner);
+	freedub(curr->list);
+	free(curr->isdir);
+	free(curr->size);
+	free(curr->time_v);
+	freedub(curr->atim);
+	free(curr->atim_s);
+	free(curr->atim_n);
+	freedub(curr->mtim);
+	free(curr->mtim_s);
+	free(curr->mtim_n);
+	free(curr->t_value);
+	freedub(curr->ctim);
+	free(curr->ctim_s);
+	free(curr->ctim_n);
+	freedub(curr->permd);
+	freedub(curr->group);
+	free(curr->visible);
+	moredirfree(curr);
+}
+
+void freestuff(t_opt *flags, char **dirs, char *key)
+{
+	free (flags);
+	freedub (dirs);
+	free (key);
+}
+
+void freestuffagain(t_opt *flags, char *key)
+{
+	free (flags);
+	free (key);
+}
+
 void timefix(char *time_s)
 {
 	time_s = ft_strsub(time_s, 5, (ft_strlen(time_s) - 5));
@@ -834,8 +896,7 @@ void upper_rl(char *str, int first, t_opt *flags)
 			upper_rl(makepath(str, curr->list[curr->print[i]]), first, flags);
 	i++;
 	}
-	free(key);
-	free(curr);
+	//freestuffagain(flags, curr, key);
 }
 
 int arraysize(char** ret)
@@ -908,7 +969,6 @@ void dispatchls(t_opt *flags, char **dir, int d_num)
 
 int shelp(const char **argv, int count, char **ret, int i)
 {
-		malloc(0);
 		ret[count] = ft_strdup(argv[i]);
 		count = count + 1;
 		return count;
@@ -936,19 +996,19 @@ int easyc(int *opend, int i)
 	return i;
 }
 
-char **storedirs(const char **argv, int *count)
+char **storedirs(const char **argv, int *count, int argc)
 {
 	int i;
 	char **ret;
 	int opend;
 
 	intitthem(&opend, &i, count);
-	while(argv[i])
+	while(argc > i)
 		i = retit(argv, i, count);
-	ret = (char**)malloc(sizeof(char*) * *count + 1);
+	ret = (char**)malloc(sizeof(char*) * (*count + 1));
 	*count = 0;
 	i = 1;
-	while(argv[i])
+	while(argc > i)
 	{
 		if (ft_strcmp("--", argv[i]) == 0 && !opend)
 			 i = easyc(&opend, i);
@@ -1109,7 +1169,7 @@ char **finishmain(int argc, char **dirs, int *d_size, const char **argv)
 {
 	if (argc > 1)
 	{
-		dirs = storedirs(argv, d_size);
+		dirs = storedirs(argv, d_size, argc);
 		return (dirs);
 	}
 	return (NULL);
@@ -1125,63 +1185,6 @@ void endl(t_opt *flags, int d_size, h_dir *curr)
 {
 	if ((flags->t_op || flags->rec_op) && (d_size > 0 && curr->msize > 1))
 		ft_putendl("");
-}
-
-void freedub(char **data)
-{
-	int i;
-
-	i = 0;
-	while (data[i])
-	{
-		free(data[i]);
-		i++;
-	}
-	free(data);
-}
-
-void moredirfree(h_dir *curr)
-{
-	free(curr->isblock);
-	free(curr->block_dev);
-	free(curr->block_min);
-	free(curr->print);
-	free(curr->islnk);
-	free(curr);
-}
-void freedir(h_dir *curr)
-{
-	free(curr->savetime);
-	free(curr->old);
-	freedub(curr->year);
-	freedub(curr->l_count);
-	freedub(curr->owner);
-	freedub(curr->list);
-	free(curr->isdir);
-	free(curr->size);
-	free(curr->time_v);
-	freedub(curr->atim);
-	free(curr->atim_s);
-	free(curr->atim_n);
-	freedub(curr->mtim);
-	free(curr->mtim_s);
-	free(curr->mtim_n);
-	free(curr->t_value);
-	freedub(curr->ctim);
-	free(curr->ctim_s);
-	free(curr->ctim_n);
-	freedub(curr->permd);
-	freedub(curr->group);
-	free(curr->visible);
-	moredirfree(curr);
-}
-
-void freestuff(t_opt *flags, h_dir *curr, char **dirs, char *key)
-{
-	free (flags);
-	freedub (dirs);
-	freedir (curr);
-	free (key);
 }
 
 int main(int argc, char const *argv[])
@@ -1208,5 +1211,5 @@ int main(int argc, char const *argv[])
 	mainprint(flags, key, i, curr);
 	endl(flags, d_size, curr);
 	dispatchls(flags, dirs, d_size);
-	//freestuff(flags, curr, dirs, key);
+	freestuff(flags, dirs, key);
 }
