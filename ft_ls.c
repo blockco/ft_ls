@@ -1,9 +1,9 @@
 
 #include "ft_ls.h"
 
-void freedub(char **data)
+void	freedub(char **data)
 {
-	int i;
+	int	i;
 
 	i = 0;
 	while (data[i])
@@ -14,7 +14,7 @@ void freedub(char **data)
 	free(data);
 }
 
-void moredirfree(h_dir *curr)
+void	moredirfree(h_dir *curr)
 {
 	free(curr->isblock);
 	free(curr->block_dev);
@@ -23,7 +23,7 @@ void moredirfree(h_dir *curr)
 	free(curr->islnk);
 	//free(curr);
 }
-void freedir(h_dir *curr)
+void	freedir(h_dir *curr)
 {
 	free(curr->savetime);
 	free(curr->old);
@@ -50,35 +50,35 @@ void freedir(h_dir *curr)
 	moredirfree(curr);
 }
 
-void freestuff(t_opt *flags, char **dirs, char *key)
+void	freestuff(t_opt *flags, char **dirs, char *key)
 {
 	free (flags);
 	freedub (dirs);
 	free (key);
 }
 
-void freestuffagain(t_opt *flags, char *key)
+void	freestuffagain(t_opt *flags, char *key)
 {
 	free (flags);
 	free (key);
 }
 
-void timefix(char *time_s)
+void	timefix(char *time_s)
 {
 	time_s = ft_strsub(time_s, 5, (ft_strlen(time_s) - 5));
 }
 
-void trimtime(char *time_s)
+void	trimtime(char *time_s)
 {
 	time_s[ft_strlen(time_s) - 1] = 0;
 	timefix(time_s);
 }
 
-char* denyname(char *str)
+char	*denyname(char *str)
 {
-	int i;
-	int a;
-	char *ret;
+	int		i;
+	int		a;
+	char	*ret;
 
 	i = 2;
 	a = 0;
@@ -90,14 +90,14 @@ char* denyname(char *str)
 		a++;
 	}
 	ret[a] = '\0';
-	return ret;
+	return (ret);
 }
 
-int findmsize(char *str)
+int		findmsize(char *str)
 {
-	int msize;
-	DIR *dir;
-	struct dirent *dp;
+	int		msize;
+	DIR		*dir;
+	struct	dirent *dp;
 
 	msize = 0;
 	errno = 0;
@@ -113,12 +113,12 @@ int findmsize(char *str)
 			msize++;
 		closedir(dir);
 	}
-	return msize;
+	return (msize);
 }
 
-void mallocrest(h_dir **current)
+void	mallocrest(h_dir **current)
 {
-	h_dir *curr;
+	h_dir	*curr;
 
 	curr = *current;
 	curr->ctim = (char**)malloc(sizeof(char*) * curr->msize);
@@ -136,9 +136,9 @@ void mallocrest(h_dir **current)
 	curr->block_min = (long*)malloc(sizeof(long) * curr->msize);
 }
 
-void mallocstruct(h_dir **current)
+void	mallocstruct(h_dir **current)
 {
-	h_dir *curr;
+	h_dir	*curr;
 
 	curr = *current;
 	curr->list = (char**)malloc(sizeof(char*) * curr->msize + 1);
@@ -163,7 +163,7 @@ void mallocstruct(h_dir **current)
 	mallocrest(&curr);
 }
 
-char* intit_perm(int isdir, int islnk)
+char	*intit_perm(int isdir, int islnk)
 {
 	if (isdir)
 		return(ft_strdup("d"));
@@ -172,9 +172,9 @@ char* intit_perm(int isdir, int islnk)
 	return(ft_strdup("-"));
 }
 
-char *findperm(char c)
+char	*findperm(char c)
 {
-	if(c == '7')
+	if (c == '7')
 		return (ft_strdup("rwx"));
 	else if (c == '6')
 		return (ft_strdup("rw-"));
@@ -192,10 +192,11 @@ char *findperm(char c)
 		return (ft_strdup("---"));
 }
 
-char* permstr(char *perm, int isdir, int isdev, int islnk)
+char	*permstr(char *perm, int isdir, int isdev, int islnk)
 {
-	int i;
-	char *ret;
+	int		i;
+	char	*ret;
+
 	if (isdir)
 		i = 2;
 	else
@@ -211,19 +212,19 @@ char* permstr(char *perm, int isdir, int isdev, int islnk)
 	return (ret);
 }
 
-char* makepath(char *curdir, char *file)
+char	*makepath(char *curdir, char *file)
 {
-	char *temp;
+	char	*temp;
 
 	temp = betterjoin(curdir, "/");
 	return(betterjoin(temp, file));
 }
 
-char* getyear(char *str)
+char	*getyear(char *str)
 {
-	int i;
-	char *ret;
-	int a;
+	int		i;
+	char	*ret;
+	int		a;
 
 	ret = ft_strnew(4);
 	i = ft_strlen(str) - 5;
@@ -234,13 +235,12 @@ char* getyear(char *str)
 		a++;
 		i++;
 	}
-	return ret;
+	return (ret);
 }
 
-//get link
-void morelink(struct stat sb_l, h_dir *curr, int i)
+void	morelink(struct stat sb_l, h_dir *curr, int i)
 {
-	static time_t now;
+	static time_t	now;
 
 	now = time(NULL);
 	curr->size[i] = sb_l.st_size;
@@ -264,7 +264,7 @@ void morelink(struct stat sb_l, h_dir *curr, int i)
 		curr->old[i] = 1;
 }
 
-void evenmorelnk(struct stat sb_l, h_dir *curr, int i)
+void	evenmorelnk(struct stat sb_l, h_dir *curr, int i)
 {
 	if ((sb_l.st_mode & S_IFMT) == S_IFDIR)
 		curr->isdir[i] = 1;
@@ -281,11 +281,11 @@ void evenmorelnk(struct stat sb_l, h_dir *curr, int i)
 	morelink(sb_l, curr, i);
 }
 
-int getlnk(struct stat sb_l, h_dir **current, int i)
+int		getlnk(struct stat sb_l, h_dir **current, int i)
 {
-	struct passwd *pwuser;
-	struct group *grpnam;
-	h_dir *curr;
+	struct passwd	*pwuser;
+	struct group	*grpnam;
+	h_dir			*curr;
 
 	curr = *current;
 	if (NULL == (pwuser = getpwuid(sb_l.st_uid)))
@@ -310,13 +310,13 @@ int getlnk(struct stat sb_l, h_dir **current, int i)
 	return(sb_l.st_blocks);
 }
 
-void initial(h_dir **current, char **str)
+void	initial(h_dir **current, char **str)
 {
-	int temp;
-	int i;
-	struct stat sb_l;
-	h_dir *curr;
-	long long block;
+	int			temp;
+	int 		i;
+	struct stat	sb_l;
+	h_dir		*curr;
+	long long	block;
 
 	block = 0;
 	i = 0;
@@ -345,12 +345,12 @@ void initial(h_dir **current, char **str)
 	curr->blocks = block;
 }
 
-void initstruct(h_dir *curr, char *str, int i)
+void	initstruct(h_dir *curr, char *str, int i)
 {
-	DIR *dir;
-	int temp;
-	struct dirent *dp;
-	struct stat sb_l;
+	DIR				*dir;
+	int 			temp;
+	struct dirent	*dp;
+	struct stat		sb_l;
 
 	curr->blocks = 0;
 	mallocstruct(&curr);
@@ -374,7 +374,7 @@ void initstruct(h_dir *curr, char *str, int i)
 	closedir(dir);
 }
 
-int checkinf(char *str)
+int		checkinf(char *str)
 {
 	if ((ft_strcmp(str,".") == 0 ) || (ft_strcmp(str,"..") == 0) )
 		return (0);
@@ -394,7 +394,7 @@ char	**dup_strarray(h_dir **current, char **list)
 	return (ret);
 }
 
-int	name_sort(h_dir **current, int pos1, int pos2)
+int		name_sort(h_dir **current, int pos1, int pos2)
 {
 	h_dir *curr;
 
@@ -431,7 +431,7 @@ void lex_sort(h_dir **current, int (*sort_func)(h_dir **, int, int))
 
 int time_sort(h_dir **current, int pos1, int pos2)
 {
-	h_dir *curr;
+	h_dir	*curr;
 
 	curr = *current;
 	if (curr->time_v[pos1] - curr->time_v[pos2] == 0)
@@ -445,9 +445,9 @@ int time_sort(h_dir **current, int pos1, int pos2)
 		return (curr->time_v[pos1] - curr->time_v[pos2] < 0);
 }
 
-void findmax(h_dir *curr)
+void	findmax(h_dir *curr)
 {
-	int i;
+	int	i;
 
 	i = 0;
 	curr->linksize = 0;
@@ -474,7 +474,7 @@ void findmax(h_dir *curr)
 	}
 }
 
-char *printlnk(char *str)
+char	*printlnk(char *str)
 {
 	struct stat sb;
 	char *linkname;
@@ -489,10 +489,10 @@ char *printlnk(char *str)
 	return(linkname);
 }
 
-char* makekey(h_dir **current)
+char	*makekey(h_dir **current)
 {
 	char	*key;
-	h_dir *curr;
+	h_dir	*curr;
 
 	curr = *current;
 	key = betterjoin("%-12s%-", (ft_itoa_base((curr->linksize + 1), 10)));
@@ -500,11 +500,11 @@ char* makekey(h_dir **current)
 	key = betterjoin(key, (ft_itoa_base((curr->ownersize + 2), 10)));
 	key = betterjoin(key, "s%-");
 	key = betterjoin(key, ft_itoa_base((curr->groupsize + 2), 10));
-	key =betterjoin(key, "s");
-	return key;
+	key = betterjoin(key, "s");
+	return (key);
 }
 
-void initflag(t_opt *flags, int *i, int *d_size)
+void	initflag(t_opt *flags, int *i, int *d_size)
 {
 	*i = 0;
 	*d_size = 0;
@@ -516,9 +516,10 @@ void initflag(t_opt *flags, int *i, int *d_size)
 	flags->t_op = 0;
 }
 
-void noz(char c)
+void	noz(char c)
 {
-	char *str;
+	char	*str;
+
 	str = malloc(2);
 	str[0] = c;
 	str[1] = '\0';
@@ -527,7 +528,7 @@ void noz(char c)
 	exit(1);
 }
 
-void checkflag(char c, t_opt *flags)
+void	checkflag(char c, t_opt *flags)
 {
 	if (c == 'l')
 		flags->l_op = 1;
@@ -543,12 +544,12 @@ void checkflag(char c, t_opt *flags)
 		noz(c);
 }
 
-void printflags(t_opt *flags)
+void	printflags(t_opt *flags)
 {
 	ft_printf("%d\n%d\n%d\n%d\n%d\n%d\n", flags->l_op,flags->reg_ls,flags->rec_op,flags->a_op,flags->rev_op,flags->t_op);
 }
 
-int moreparse(int i, int c, const char **input, t_opt *flags)
+int		moreparse(int i, int c, const char **input, t_opt *flags)
 {
 	while(input[i][c])
 	{
@@ -556,14 +557,14 @@ int moreparse(int i, int c, const char **input, t_opt *flags)
 			c++;
 		checkflag(input[i][c++], flags);
 	}
-	return c;
+	return (c);
 }
 
-char *parseinput(const char **input, t_opt *flags, int argc)
+char	*parseinput(const char **input, t_opt *flags, int argc)
 {
-	int i;
-	int c;
-	char *str;
+	int		i;
+	int		c;
+	char	*str;
 
 	i = 1;
 	if (input[1][0] == '-')
@@ -582,20 +583,21 @@ char *parseinput(const char **input, t_opt *flags, int argc)
 			c = moreparse(i, c, input, flags);
 		i++;
 	}
-	return str;
+	return (str);
 }
 
-char* normkey(h_dir *curr)
+char	*normkey(h_dir *curr)
 {
-	char *ret;
+	char	*ret;
+
 	ret = betterjoin("%-", ft_itoa_base((curr->longest + 1), 10));
 	ret = betterjoin(ret, "s");
 	return (ret);
 }
 
-void makevisible(h_dir *curr)
+void	makevisible(h_dir *curr)
 {
-	int i;
+	int	i;
 
 	i = 0;
 	while (i < curr->msize)
@@ -605,15 +607,15 @@ void makevisible(h_dir *curr)
 	}
 }
 
-void handle_op(h_dir *curr, t_opt *flags)
+void	handle_op(h_dir *curr, t_opt *flags)
 {
 	if (flags->a_op)
 		makevisible(curr);
 }
 
-void revprint(h_dir *curr)
+void	revprint(h_dir *curr)
 {
-	int temp;
+	int	temp;
 
 	temp = curr->msize;
 	temp--;
@@ -625,7 +627,7 @@ void revprint(h_dir *curr)
 	}
 }
 
-void normprint(h_dir *curr)
+void	normprint(h_dir *curr)
 {
 	int i;
 
@@ -638,17 +640,15 @@ void normprint(h_dir *curr)
 	}
 }
 
-
-char *quickdirchange(char *str)
+char	*quickdirchange(char *str)
 {
-	char *ret;
+	char	*ret;
 
 	ret = ft_strdup(str);
-	//ret[ft_strlen(str) - 2] = '\0';
 	return ret;
 }
 
-void morenorm(h_dir *curr, char *str, t_opt *flags)
+void	morenorm(h_dir *curr, char *str, t_opt *flags)
 {
 	initstruct(curr, str, 0);
 	findmax(curr);
@@ -659,7 +659,7 @@ void morenorm(h_dir *curr, char *str, t_opt *flags)
 	handle_op(curr ,flags);
 }
 
-int morestuff(int first, char *str, t_opt *flags, h_dir *curr)
+int		morestuff(int first, char *str, t_opt *flags, h_dir *curr)
 {
 	if (first++)
 		ft_printf("%s:\n", str);
@@ -670,7 +670,7 @@ int morestuff(int first, char *str, t_opt *flags, h_dir *curr)
 	return (first);
 }
 
-int checkifnorm(h_dir *curr, int i)
+int		checkifnorm(h_dir *curr, int i)
 {
 	if (curr->list[curr->print[i]] && curr->visible[curr->print[i]]
 		&&curr->isdir[curr->print[i]]
@@ -680,13 +680,13 @@ int checkifnorm(h_dir *curr, int i)
 	return 0;
 }
 
-void dosome(int first)
+void	dosome(int first)
 {
 	if (first > 0)
 		ft_printf("\n");
 }
 
-void moresome(int *i, int *inc, t_opt *flags, h_dir *curr)
+void	moresome(int *i, int *inc, t_opt *flags, h_dir *curr)
 {
 	if (flags->rev_op)
 		*i = curr->msize - 1;
@@ -694,12 +694,12 @@ void moresome(int *i, int *inc, t_opt *flags, h_dir *curr)
 		*inc = 1;
 }
 
-void ls_norm(char *str, t_opt *flags, int first)
+void	ls_norm(char *str, t_opt *flags, int first)
 {
-	h_dir *curr;
-	int i;
-	char *temp;
-	int inc;
+	h_dir	*curr;
+	int		i;
+	char	*temp;
+	int		inc;
 
 	inc = -1;
 	i = 0;
@@ -712,9 +712,9 @@ void ls_norm(char *str, t_opt *flags, int first)
 	temp[ft_strlen(temp) - 2] = '\0';
 	first = morestuff(first, str, flags, curr);
 	moresome(&i, &inc, flags, curr);
-	while(i > -1 && i < curr->msize && flags->rec_op)
+	while (i > -1 && i < curr->msize && flags->rec_op)
 	{
-		if(checkifnorm(curr, i))
+		if (checkifnorm(curr, i))
 		{
 			dosome(first);
 			ls_norm(makepath(str, curr->list[curr->print[i]]), flags, first);
@@ -723,10 +723,10 @@ void ls_norm(char *str, t_opt *flags, int first)
 	}
 }
 
-void makerev(h_dir *curr)
+void	makerev(h_dir *curr)
 {
-	int i;
-	int *ret;
+	int	i;
+	int	*ret;
 	int count;
 
 	count = 0;
@@ -742,7 +742,7 @@ void makerev(h_dir *curr)
 	curr->print = ret;
 }
 
-void handle_op_l(h_dir *curr, t_opt *flags)
+void	handle_op_l(h_dir *curr, t_opt *flags)
 {
 	if (flags->a_op)
 		makevisible(curr);
@@ -750,17 +750,17 @@ void handle_op_l(h_dir *curr, t_opt *flags)
 		makerev(curr);
 }
 
-char *yearswitch(char *str, char *year)
+char	*yearswitch(char *str, char *year)
 {
-	int i;
-	char *ret;
-	char *c;
+	int		i;
+	char	*ret;
+	char	*c;
 
 	c = ft_strchr(year,'\n');
 	c[0] = 0;
 	ret = ft_strnew(7);
 	i = 0;
-	while(i < 7)
+	while (i < 7)
 	{
 		ret[i] = str[i];
 		i++;
@@ -770,7 +770,7 @@ char *yearswitch(char *str, char *year)
 
 }
 
-char* settime(char *str, int old, char *year)
+char	*settime(char *str, int old, char *year)
 {
 	int i;
 	int a;
@@ -786,16 +786,16 @@ char* settime(char *str, int old, char *year)
 	}
 	if (old)
 		return(yearswitch(ret, year));
-	return ret;
+	return (ret);
 }
 
-void revprint_l(h_dir *curr, char *str)
+void	revprint_l(h_dir *curr, char *str)
 {
-	int temp;
+	int	temp;
 
 	temp = curr->msize;
 	temp--;
-	while(temp > -1)
+	while (temp > -1)
 	{
 		if (curr->visible[curr->print[temp]])
 		{
@@ -810,9 +810,9 @@ void revprint_l(h_dir *curr, char *str)
 	}
 }
 
-void printrest(h_dir *curr, int i)
+void	printrest(h_dir *curr, int i)
 {
-	char *key;
+	char	*key;
 
 	key = ft_strdup("%s%s%s%s%s%s%-13s%-0s");
 	if (curr->isblock[i])
@@ -831,7 +831,7 @@ void printrest(h_dir *curr, int i)
 	ft_itoa_base(curr->size[i], 10), " ", settime(curr->mtim[i],curr->old[i], curr->year[i]), curr->list[i]);
 }
 
-int moreupperl(int first, char *str, h_dir *curr, t_opt *flags)
+int		moreupperl(int first, char *str, h_dir *curr, t_opt *flags)
 {
 	if (first++)
 		ft_printf("\n%s:\n", quickdirchange(str));
@@ -839,10 +839,10 @@ int moreupperl(int first, char *str, h_dir *curr, t_opt *flags)
 		curr->v_block = 0;
 	if (curr->blocks - curr->v_block > -1)
 		ft_printf("%s%lld\n", "total ",(curr->blocks - curr->v_block));
-	return first;
+	return (first);
 }
 
-void evenupperr(char *key, h_dir *curr, int i, char *str)
+void	evenupperr(char *key, h_dir *curr, int i, char *str)
 {
 	ft_printf(key, curr->permd[curr->print[i]], curr->l_count[curr->print[i]] ,curr->owner[curr->print[i]], curr->group[curr->print[i]]);
 	printrest(curr, curr->print[i]);
@@ -852,15 +852,15 @@ void evenupperr(char *key, h_dir *curr, int i, char *str)
 		ft_putchar('\n');
 }
 
-int uppertest(h_dir *curr, int i)
+int		uppertest(h_dir *curr, int i)
 {
 	if (curr->list[curr->print[i]] && curr->visible[curr->print[i]]&& curr->isdir[curr->print[i]]
 		&& checkinf(curr->list[curr->print[i]]) && !curr->islnk[curr->print[i]])
-		return 1;
-	return 0;
+		return (1);
+	return (0);
 }
 
-void structstuff(h_dir *curr, char *str, t_opt *flags)
+void	structstuff(h_dir *curr, char *str, t_opt *flags)
 {
 	curr->msize = findmsize(str);
 	initstruct(curr, str, 0);
@@ -871,11 +871,11 @@ void structstuff(h_dir *curr, char *str, t_opt *flags)
 	handle_op_l(curr, flags);
 	findmax(curr);
 }
-void upper_rl(char *str, int first, t_opt *flags)
+void	upper_rl(char *str, int first, t_opt *flags)
 {
-	h_dir *curr;
-	int i;
-	char *key;
+	h_dir	*curr;
+	int		i;
+	char	*key;
 
 	curr = malloc(sizeof(h_dir));
 	structstuff(curr, str, flags);
@@ -896,12 +896,11 @@ void upper_rl(char *str, int first, t_opt *flags)
 			upper_rl(makepath(str, curr->list[curr->print[i]]), first, flags);
 	i++;
 	}
-	//freestuffagain(flags, curr, key);
 }
 
-int arraysize(char** ret)
+int		arraysize(char** ret)
 {
-	int i;
+	int	i;
 
 	i = 0;
 	while (ret[i] != NULL)
@@ -909,23 +908,23 @@ int arraysize(char** ret)
 	return (i);
 }
 
-int lhelp(int i, int inc, char **dir, int d_num)
+int		lhelp(int i, int inc, char **dir, int d_num)
 {
 	i = i + inc;
 	if (d_num > 1 && (i > -1 && i < arraysize(dir)))
 		ft_putendl("");
-	return i;
+	return (i);
 }
 
-int mhelp(int i, int inc, char **dir, int d_num)
+int		mhelp(int i, int inc, char **dir, int d_num)
 {
 	i = i + inc;
 	if (d_num > 1 && (i > -1 && i < arraysize(dir)))
 		ft_putendl("");
-	return i;
+	return (i);
 }
 
-void handlerev(t_opt *flags, int *i, int *inc, int d_num)
+void	handlerev(t_opt *flags, int *i, int *inc, int d_num)
 {
 	if (flags->rev_op)
 	{
@@ -939,7 +938,7 @@ void handlerev(t_opt *flags, int *i, int *inc, int d_num)
 	}
 }
 
-void dispatchls(t_opt *flags, char **dir, int d_num)
+void	dispatchls(t_opt *flags, char **dir, int d_num)
 {
 	int i;
 	int inc;
@@ -967,40 +966,40 @@ void dispatchls(t_opt *flags, char **dir, int d_num)
 	}
 }
 
-int shelp(const char **argv, int count, char **ret, int i)
+int		shelp(const char **argv, int count, char **ret, int i)
 {
 		ret[count] = ft_strdup(argv[i]);
 		count = count + 1;
 		return count;
 }
 
-int retit(const char **argv, int i, int *count)
+int		retit(const char **argv, int i, int *count)
 {
 	if (argv[i][0] != '-' || (argv[i][0] == '-' && !argv[i][1]))
 		*count = *count + 1;
 	i++;
-	return i;
+	return (i);
 }
 
-void intitthem(int *opend, int *i, int *count)
+void	intitthem(int *opend, int *i, int *count)
 {
 	*opend = 0;
 	*i = 1;
 	*count = 0;
 }
 
-int easyc(int *opend, int i)
+int		easyc(int *opend, int i)
 {
 	*opend = 1;
 	i++;
-	return i;
+	return (i);
 }
 
-char **storedirs(const char **argv, int *count, int argc)
+char	**storedirs(const char **argv, int *count, int argc)
 {
-	int i;
-	char **ret;
-	int opend;
+	int		i;
+	char	**ret;
+	int		opend;
 
 	intitthem(&opend, &i, count);
 	while(argc > i)
@@ -1022,10 +1021,10 @@ char **storedirs(const char **argv, int *count, int argc)
 		i++;
 	}
 	ret[*count] = NULL;
-	return ret;
+	return (ret);
 }
 
-int founddir(char **dirs, int found, int i)
+int		founddir(char **dirs, int found, int i)
 {
 	ft_putstr("ls: ");
 	perror(dirs[i]);
@@ -1033,7 +1032,7 @@ int founddir(char **dirs, int found, int i)
 	return found;
 }
 
-void setthem(int *a, int *i, int *b, int *found)
+void	setthem(int *a, int *i, int *b, int *found)
 {
 	*a = 0;
 	*i = 0;
@@ -1041,33 +1040,33 @@ void setthem(int *a, int *i, int *b, int *found)
 	*found = 0;
 }
 
-int seti(int i, char **dirs, DIR *dir)
+int		seti(int i, char **dirs, DIR *dir)
 {
 	if (errno != 2 && !dirs[i])
 		closedir(dir);
 	i++;
-	return i;
+	return (i);
 }
 
-void makenull(int a, int b, char **ret, char **temp)
+void	makenull(int a, int b, char **ret, char **temp)
 {
 	ret[a] = NULL;
 	temp[b] = NULL;
 }
 
-void lastexist(h_dir *curr, int d_size, char **ret)
+void	lastexist(h_dir *curr, int d_size, char **ret)
 {
 	curr->list = (char**)malloc(sizeof(char*) * d_size + 1);
 	ret[d_size] = NULL;
 }
-char **checkexist(char **dirs, int d_size, h_dir *curr, t_opt *flags)
+char	**checkexist(char **dirs, int d_size, h_dir *curr, t_opt *flags)
 {
-	char **ret;
-	DIR *dir;
-	int i;
-	int a;
-	int b;
-	int found;
+	char	**ret;
+	DIR		*dir;
+	int		i;
+	int		a;
+	int		b;
+	int		found;
 
 	setthem(&a, &i, &b, &found);
 	ret = (char**)malloc(sizeof(char*) * d_size + 1);
@@ -1086,10 +1085,10 @@ char **checkexist(char **dirs, int d_size, h_dir *curr, t_opt *flags)
 		i = seti(i, dirs, dir);
 	}
 	makenull(a, b, ret, curr->list);
-	return(ret); //fix
+	return(ret);
 }
 
-void mainops(t_opt *flags, h_dir *curr, int *i, int *inc)
+void	mainops(t_opt *flags, h_dir *curr, int *i, int *inc)
 {
 	if (flags->rev_op && (!flags->rec_op && curr->msize > 0))
 	{
@@ -1103,7 +1102,7 @@ void mainops(t_opt *flags, h_dir *curr, int *i, int *inc)
 	}
 }
 
-int checkinc(t_opt *flags, h_dir *curr)
+int		checkinc(t_opt *flags, h_dir *curr)
 {
 	if (flags->rev_op && (!flags->rec_op && curr->msize > 0))
 		return(-1);
@@ -1112,9 +1111,9 @@ int checkinc(t_opt *flags, h_dir *curr)
 }
 
 
-void mainprint(t_opt *flags, char *key, int i, h_dir *curr)
+void	mainprint(t_opt *flags, char *key, int i, h_dir *curr)
 {
-	int inc;
+	int	inc;
 
 	inc = checkinc(flags, curr);
 	while (i < curr->msize)
@@ -1141,7 +1140,7 @@ void mainprint(t_opt *flags, char *key, int i, h_dir *curr)
 	}
 }
 
-char *fixmain(h_dir *curr, t_opt *flags)
+char	*fixmain(h_dir *curr, t_opt *flags)
 {
 	char **temp;
 
@@ -1156,16 +1155,16 @@ char *fixmain(h_dir *curr, t_opt *flags)
 	return(makekey(&curr));
 }
 
-char **fixdir(char **dirs, int *d_size)
+char	**fixdir(char **dirs, int *d_size)
 {
 	dirs = (char**)malloc(sizeof(char*) * 2);
 	dirs[0] = ft_strdup(".");
 	dirs[1] = NULL;
 	*d_size = 1;
-	return dirs;
+	return (dirs);
 }
 
-char **finishmain(int argc, char **dirs, int *d_size, const char **argv)
+char	**finishmain(int argc, char **dirs, int *d_size, const char **argv)
 {
 	if (argc > 1)
 	{
@@ -1175,19 +1174,19 @@ char **finishmain(int argc, char **dirs, int *d_size, const char **argv)
 	return (NULL);
 }
 
-void flagfix(int argc, const char **argv, t_opt *flags)
+void	flagfix(int argc, const char **argv, t_opt *flags)
 {
 	if (argc > 1)
 		parseinput(argv, flags, argc);
 }
 
-void endl(t_opt *flags, int d_size, h_dir *curr)
+void	endl(t_opt *flags, int d_size, h_dir *curr)
 {
 	if ((flags->t_op || flags->rec_op) && (d_size > 0 && curr->msize > 1))
 		ft_putendl("");
 }
 
-int main(int argc, char const *argv[])
+int		main(int argc, char const *argv[])
 {
 	t_opt *flags;
 	char **dirs;
