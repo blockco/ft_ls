@@ -3,6 +3,22 @@ CC =	gcc
 FLAG = -Wall -Wextra -Werror
 
 SRCS = 	ft_ls.c \
+		ft_ls_1.c \
+		ft_ls_2.c \
+		ft_ls_3.c \
+		ft_ls_4.c \
+		ft_ls_5.c \
+		ft_ls_6.c \
+		ft_ls_7.c \
+		ft_ls_8.c \
+		ft_ls_9.c \
+		ft_ls_10.c \
+		ft_ls_11.c \
+		ft_ls_12.c \
+		ft_ls_13.c \
+		ft_ls_14.c \
+		ft_ls_15.c \
+		ft_ls_16.c \
 		libftprintf.a \
 
 
